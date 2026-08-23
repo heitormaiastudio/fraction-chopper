@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- Tag lang atualizada para inglês -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +17,7 @@
             min-height: 100vh;
             margin: 0;
             transition: background-color 1.5s ease;
+            overflow: hidden;
         }
 
         .brand-logo-img {
@@ -81,7 +82,7 @@
             width: 90%;
         }
 
-        .modal-title { color: #00ffcc; margin-top: 5px; margin-bottom: 15px; }
+        .modal-title { color: #00ffcc; margin-top: 5px; margin-bottom: 10px; }
         .section-title { color: #ffeb3b; margin-top: 12px; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
 
         .btn-group { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; }
@@ -207,7 +208,6 @@
 </head>
 <body>
 
-<!-- GAME MAIN MENU COVER -->
 <div id="menu-overlay">
     <div class="modal-card">
         <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
@@ -250,7 +250,7 @@
 
 <div id="game-container">
     <div id="hud">
-        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img brand-hud-img" onerror="this.style.display='none'">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-hud-img" onerror="this.style.display='none'">
         <div class="hud-stats-bar">
             <div>LVL: <span id="level-display">1</span></div>
             <div>PROG: <span id="progress-display">0</span>/5</div>
@@ -268,7 +268,6 @@
         EAT THE PAPER WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
         <span id="target-fraction"></span>
     </div>
-    <!-- controlsHint updated to English -->
     <div id="controls-hint">Use Arrow Keys to move the Monster.</div>
 </div>
 
@@ -277,7 +276,6 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const GRID_SIZE = 25;
 
-// Carregamento das imagens do monstrinho
 const monsterImages = {
     horizontal: new Image(),
     horizontalba: new Image(),
@@ -289,6 +287,34 @@ monsterImages.horizontal.src = 'horizontal.png';
 monsterImages.horizontalba.src = 'horizontalba.png';
 monsterImages.vertical.src = 'vertical.png';
 monsterImages.verticalba.src = 'verticalba.png';
+
+const feedbackImages = {
+    goodjob: new Image(),
+    twomore: new Image(),
+    onemore: new Image(),
+    youwin: new Image(),
+    youlose: new Image()
+};
+
+feedbackImages.goodjob.src = 'goodjob.png';
+feedbackImages.twomore.src = 'twomore.png';
+feedbackImages.onemore.src = 'onemore.png';
+feedbackImages.youwin.src = 'youwin.png';
+feedbackImages.youlose.src = 'youlose.png';
+
+let feedbackManager = {
+    image: null,
+    timer: 0,
+    goodJobDuration: 60,
+    tryAgainDuration: 120,
+    endGameDuration: 120
+};
+
+let shakeManager = {
+    timer: 0,
+    duration: 60,
+    intensity: 3
+};
 
 const map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -331,6 +357,8 @@ let isPaused = false;
 let isGameOver = true;
 let activeKeys = {};
 let currentProblemData = null;
+let gameOutcome = false;
+let recentProblemsHistory = []; // Histórico para evitar repetições das últimas 4 perguntas
 
 const stageColors = [
     ["#0d1b1e", "#1a2a3a", "#2b213a", "#3a1c1c", "#4a1100"],
@@ -387,9 +415,12 @@ function startGame() {
     levelProgress = 0;
     isPaused = false;
     isGameOver = false;
-    // button text updated to English
+    recentProblemsHistory = []; // Limpa o histórico de repetições
     document.getElementById("btn-pause").innerText = "PAUSE";
     
+    feedbackManager.timer = 0;
+    shakeManager.timer = 0;
+
     updateHUD();
     updateTheme();
     generateNewProblem();
@@ -398,7 +429,6 @@ function startGame() {
 function togglePause() {
     if (isGameOver) return;
     isPaused = !isPaused;
-    // button text updated to English
     document.getElementById("btn-pause").innerText = isPaused ? "RESUME" : "PAUSE";
 }
 
@@ -413,12 +443,11 @@ function startTimer() {
     document.getElementById("timer-display").innerText = timeLeft + "s";
     
     timerInterval = setInterval(() => {
-        if (!isPaused && !isGameOver) {
+        if (!isPaused && !isGameOver && feedbackManager.timer <= 0) {
             timeLeft--;
             document.getElementById("timer-display").innerText = timeLeft + "s";
             if (timeLeft <= 0) {
-                // reason text updated to English
-                handleLifeLoss("TIME IS UP!");
+                handleLifeLoss();
             }
         }
     }, 1000);
@@ -448,11 +477,25 @@ function getDenominatorRange() {
 function generateNewProblem() {
     if (isGameOver) return;
     let range = getDenominatorRange();
-    let den = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-    let num = Math.floor(Math.random() * (den - 1)) + 1;
-    let whole = Math.floor(Math.random() * 4) + 1;
+    
+    let den, num, whole, modeType, currentKey;
 
-    let modeType = selectedLevel === 1 ? 'improper' : (selectedLevel === 2 ? 'mixed' : (Math.random() < 0.5 ? 'improper' : 'mixed'));
+    // Garante que a pergunta gerada não está entre as 4 últimas realizadas
+    do {
+        den = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+        num = Math.floor(Math.random() * (den - 1)) + 1;
+        whole = Math.floor(Math.random() * 4) + 1;
+
+        modeType = selectedLevel === 1 ? 'improper' : (selectedLevel === 2 ? 'mixed' : (Math.random() < 0.5 ? 'improper' : 'mixed'));
+        
+        currentKey = `${whole}_${num}_${den}_${modeType}`;
+    } while (recentProblemsHistory.includes(currentKey));
+
+    // Mantém no máximo as últimas 4 perguntas armazenadas
+    recentProblemsHistory.push(currentKey);
+    if (recentProblemsHistory.length > 4) {
+        recentProblemsHistory.shift();
+    }
 
     currentProblemData = { whole, num, den, modeType };
 
@@ -462,14 +505,12 @@ function generateNewProblem() {
     let targetImproperNum = whole * den + num;
 
     if (modeType === 'improper') {
-        // instruction text updated to English
         instructionType.innerText = "IMPROPER FRACTION";
         targetEl.innerHTML = `
             <span class="fraction-display">${whole}
                 <span class="frac"><span class="top">${num}</span><span class="bottom">${den}</span></span>
             </span>`;
     } else {
-        // instruction text updated to English
         instructionType.innerText = "MIXED NUMBER";
         targetEl.innerHTML = `
             <span class="fraction-display">
@@ -564,30 +605,39 @@ function calculatePoints() {
     return 10;
 }
 
-function handleLifeLoss(reason) {
+function handleLifeLoss() {
     if (isGameOver) return;
     lives--;
     updateHUD();
 
     if (lives <= 0) {
-        endGame(false);
+        triggerEndSequence(false);
     } else {
-        // ALERT TEXT UPDATED TO ENGLISH
-        alert(`${reason} You lost a life! Lives remaining: ${lives}`);
+        if (lives === 2) {
+            feedbackManager.image = feedbackImages.twomore;
+        } else if (lives === 1) {
+            feedbackManager.image = feedbackImages.onemore;
+        }
+        feedbackManager.timer = feedbackManager.tryAgainDuration;
+
         resetPositions();
         startTimer();
     }
 }
 
-function endGame(won) {
-    if (isGameOver) return;
-    isGameOver = true;
+function triggerEndSequence(won) {
     clearInterval(timerInterval);
-    
+    gameOutcome = won;
+    feedbackManager.image = won ? feedbackImages.youwin : feedbackImages.youlose;
+    feedbackManager.timer = feedbackManager.endGameDuration;
+}
+
+function endGameOverlay() {
+    isGameOver = true;
     document.getElementById("game-container").style.display = "none";
     document.getElementById("end-overlay").style.display = "flex";
     
-    document.getElementById("end-title").innerText = won ? "VICTORY!" : "GAME OVER";
+    document.getElementById("end-title").innerText = gameOutcome ? "VICTORY!" : "GAME OVER";
     
     document.getElementById("end-stats").innerHTML = `
         <strong>FINAL SCORE:</strong> ${score}<br>
@@ -614,7 +664,7 @@ function endGame(won) {
 }
 
 function update() {
-    if (isPaused || isGameOver) return;
+    if (isPaused || isGameOver || feedbackManager.timer > 0) return;
 
     pacman.dx = 0;
     pacman.dy = 0;
@@ -646,11 +696,10 @@ function update() {
     }
 
     ghosts.forEach(ghost => {
-        if (isGameOver) return;
         let gx = Math.round(ghost.x);
         let gy = Math.round(ghost.y);
 
-        if (Math.abs(ghost.x - gx) < 0.08 && Math.abs(ghost.y - gy) < 0.08) {
+        if (Math.abs(ghost.x - gx) < 0.05 && Math.abs(ghost.y - gy) < 0.05) {
             let possibleDirs = [];
             if (canMoveTo(gx + 1, gy)) possibleDirs.push({dx: 1, dy: 0});
             if (canMoveTo(gx - 1, gy)) possibleDirs.push({dx: -1, dy: 0});
@@ -675,30 +724,40 @@ function update() {
         else if (ghost.x >= map[0].length - 0.5) ghost.x = -0.5;
 
         let dist = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
-        if (dist < 0.6 && !isGameOver) {
+        if (dist < 0.6 && !isGameOver && feedbackManager.timer <= 0) {
             if (ghost.isCorrect) {
                 score += calculatePoints();
                 levelProgress++;
+                
+                shakeManager.timer = shakeManager.duration;
                 updateHUD();
                 updateTheme();
 
                 if (levelProgress >= 5) {
-                    endGame(true);
+                    triggerEndSequence(true);
                 } else {
-                    generateNewProblem();
+                    feedbackManager.image = feedbackImages.goodjob;
+                    feedbackManager.timer = feedbackManager.goodJobDuration;
                 }
             } else {
-                // REASON TEXT UPDATED TO ENGLISH
-                handleLifeLoss("WRONG FRACTION!");
+                handleLifeLoss();
             }
         }
     });
 }
 
 function draw() {
+    ctx.save();
+
+    if (shakeManager.timer > 0) {
+        let dx = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        let dy = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        ctx.translate(dx, dy); 
+        shakeManager.timer--;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Labirinto
     for (let r = 0; r < map.length; r++) {
         for (let c = 0; c < map[r].length; c++) {
             if (map[r][c] === 1) {
@@ -708,7 +767,6 @@ function draw() {
         }
     }
 
-    // 2. Monstrinho Usando as Suas Imagens PNG
     let px = pacman.x * GRID_SIZE + GRID_SIZE / 2;
     let py = pacman.y * GRID_SIZE + GRID_SIZE / 2;
     let size = 26;
@@ -722,20 +780,18 @@ function draw() {
     if (pacman.direction === 'left' || pacman.direction === 'right') {
         imgToDraw = isOpen ? monsterImages.horizontalba : monsterImages.horizontal;
         if (pacman.direction === 'right') {
-            ctx.scale(-1, 1); // Espelha horizontalmente se for para a direita
+            ctx.scale(-1, 1);
         }
-    } else { // 'up' ou 'down'
+    } else {
         imgToDraw = isOpen ? monsterImages.verticalba : monsterImages.vertical;
         if (pacman.direction === 'down') {
-            ctx.scale(1, -1); // Espelha verticalmente se for para baixo
+            ctx.scale(1, -1);
         }
     }
 
-    // Desenha a imagem centralizada
     ctx.drawImage(imgToDraw, -size/2, -size/2, size, size);
     ctx.restore();
 
-    // 3. Folhas de Caderno com Frações
     ghosts.forEach(ghost => {
         let gx = ghost.x * GRID_SIZE + GRID_SIZE / 2;
         let gy = ghost.y * GRID_SIZE + GRID_SIZE / 2;
@@ -745,14 +801,12 @@ function draw() {
 
         let w = 22, h = 24;
         
-        // Fundo Branco da Folha
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(-w/2, -h/2, w, h);
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1;
         ctx.strokeRect(-w/2, -h/2, w, h);
 
-        // Linhas Azuis do Caderno
         ctx.strokeStyle = "#a0c4ff";
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -761,13 +815,11 @@ function draw() {
         ctx.moveTo(-w/2, -h/2 + 18); ctx.lineTo(w/2, -h/2 + 18);
         ctx.stroke();
 
-        // Margem Vermelha
         ctx.strokeStyle = "#ffadad";
         ctx.beginPath();
         ctx.moveTo(-w/2 + 4, -h/2); ctx.lineTo(-w/2 + 4, h/2);
         ctx.stroke();
 
-        // Texto da Fração
         ctx.fillStyle = "#000000";
         ctx.textAlign = "center";
 
@@ -787,6 +839,24 @@ function draw() {
 
         ctx.restore();
     });
+
+    if (feedbackManager.timer > 0 && feedbackManager.image && feedbackManager.image.complete) {
+        let img = feedbackManager.image;
+        let w = img.width;
+        let h = img.height;
+        ctx.drawImage(img, canvas.width / 2 - w / 2, canvas.height / 2 - h / 2, w, h);
+        feedbackManager.timer--;
+
+        if (feedbackManager.timer === 0) {
+            if (feedbackManager.image === feedbackImages.youwin || feedbackManager.image === feedbackImages.youlose) {
+                endGameOverlay();
+            } else if (feedbackManager.image === feedbackImages.goodjob) {
+                generateNewProblem();
+            }
+        }
+    }
+
+    ctx.restore();
 }
 
 function gameLoop() {
@@ -795,7 +865,6 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Inicia o loop de renderização do jogo
 gameLoop();
 </script>
 </body>
