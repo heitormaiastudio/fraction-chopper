@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en"> <!-- Tag lang atualizada para inglês -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -207,7 +207,7 @@
 </head>
 <body>
 
-<!-- CAPA DO JOGO -->
+<!-- GAME MAIN MENU COVER -->
 <div id="menu-overlay">
     <div class="modal-card">
         <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
@@ -268,7 +268,8 @@
         EAT THE PAPER WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
         <span id="target-fraction"></span>
     </div>
-    <div id="controls-hint">Use Arrow Keys / Teclas de Seta para mover o Monstrinho.</div>
+    <!-- controlsHint updated to English -->
+    <div id="controls-hint">Use Arrow Keys to move the Monster.</div>
 </div>
 
 <script>
@@ -386,6 +387,7 @@ function startGame() {
     levelProgress = 0;
     isPaused = false;
     isGameOver = false;
+    // button text updated to English
     document.getElementById("btn-pause").innerText = "PAUSE";
     
     updateHUD();
@@ -396,6 +398,7 @@ function startGame() {
 function togglePause() {
     if (isGameOver) return;
     isPaused = !isPaused;
+    // button text updated to English
     document.getElementById("btn-pause").innerText = isPaused ? "RESUME" : "PAUSE";
 }
 
@@ -414,6 +417,7 @@ function startTimer() {
             timeLeft--;
             document.getElementById("timer-display").innerText = timeLeft + "s";
             if (timeLeft <= 0) {
+                // reason text updated to English
                 handleLifeLoss("TIME IS UP!");
             }
         }
@@ -458,12 +462,14 @@ function generateNewProblem() {
     let targetImproperNum = whole * den + num;
 
     if (modeType === 'improper') {
+        // instruction text updated to English
         instructionType.innerText = "IMPROPER FRACTION";
         targetEl.innerHTML = `
             <span class="fraction-display">${whole}
                 <span class="frac"><span class="top">${num}</span><span class="bottom">${den}</span></span>
             </span>`;
     } else {
+        // instruction text updated to English
         instructionType.innerText = "MIXED NUMBER";
         targetEl.innerHTML = `
             <span class="fraction-display">
@@ -566,7 +572,8 @@ function handleLifeLoss(reason) {
     if (lives <= 0) {
         endGame(false);
     } else {
-        alert(`${reason} One life lost! Remaining: ${lives}`);
+        // ALERT TEXT UPDATED TO ENGLISH
+        alert(`${reason} You lost a life! Lives remaining: ${lives}`);
         resetPositions();
         startTimer();
     }
@@ -681,6 +688,7 @@ function update() {
                     generateNewProblem();
                 }
             } else {
+                // REASON TEXT UPDATED TO ENGLISH
                 handleLifeLoss("WRONG FRACTION!");
             }
         }
