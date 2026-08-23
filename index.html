@@ -566,7 +566,7 @@ function handleLifeLoss(reason) {
     if (lives <= 0) {
         endGame(false);
     } else {
-        alert(`${reason} Você perdeu uma vida! Vidas restantes: ${lives}`);
+        alert(`${reason} One life lost! Remaining: ${lives}`);
         resetPositions();
         startTimer();
     }
