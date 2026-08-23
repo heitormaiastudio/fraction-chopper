@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man: Fraction Challenge</title>
+    <title>Fraction Chopper</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             background-color: #0d1b1e;
             color: #ffffff;
@@ -18,7 +19,6 @@
             transition: background-color 1.5s ease;
         }
 
-        /* Branding Logo Image Styles */
         .brand-logo-img {
             max-width: 100%;
             height: auto;
@@ -27,14 +27,34 @@
             margin: 0 auto;
         }
 
-        .brand-menu-img {
-            width: 260px; /* Logo maior no menu */
-            margin-bottom: 15px;
+        .game-main-logo {
+            width: 300px;
+            max-width: 90%;
+            margin: 0 auto 15px auto;
         }
 
         .brand-hud-img {
-            height: 45px; /* Logo em destaque no topo do HUD */
-            margin-bottom: 12px;
+            height: 35px;
+            margin-bottom: 8px;
+        }
+
+        .offered-by-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .offered-by-text {
+            font-size: 11px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .offered-by-img {
+            width: 130px;
         }
 
         #menu-overlay, #end-overlay {
@@ -54,7 +74,7 @@
             background-color: #062319;
             border: 4px solid #00ffcc;
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 0 25px rgba(0, 255, 200, 0.3);
             max-width: 480px;
@@ -62,16 +82,16 @@
         }
 
         .modal-title { color: #00ffcc; margin-top: 5px; margin-bottom: 15px; }
-        .section-title { color: #ffeb3b; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
+        .section-title { color: #ffeb3b; margin-top: 12px; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
 
-        .btn-group { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+        .btn-group { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; }
 
         .btn-option {
             background-color: #00aa55;
             color: white;
             border: 2px solid transparent;
-            padding: 10px 14px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
             font-weight: bold;
             font-family: 'Courier New', Courier, monospace;
             cursor: pointer;
@@ -93,17 +113,17 @@
         .btn-start {
             background-color: #ff9933;
             color: #000;
-            font-size: 18px;
+            font-size: 16px;
             width: 80%;
-            margin-top: 15px;
-            padding: 12px;
+            margin-top: 12px;
+            padding: 10px;
         }
 
         #game-container {
             position: relative;
             text-align: center;
             background-color: #062319;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 255, 150, 0.2);
             border: 4px solid #00ffcc;
@@ -115,7 +135,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .hud-stats-bar {
@@ -123,23 +143,23 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffeb3b;
         }
 
-        .hud-buttons { display: flex; gap: 8px; }
+        .hud-buttons { display: flex; gap: 6px; }
 
         .btn-hud {
             background-color: #ff9933;
             color: #000;
             border: none;
-            padding: 6px 12px;
+            padding: 5px 10px;
             font-weight: bold;
             font-family: 'Courier New', Courier, monospace;
             cursor: pointer;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .btn-hud:hover { background-color: #ffeb3b; }
@@ -152,8 +172,8 @@
         }
 
         #ui-panel {
-            margin-top: 15px;
-            font-size: 20px;
+            margin-top: 12px;
+            font-size: 18px;
             font-weight: bold;
             color: #ffffff;
         }
@@ -161,9 +181,9 @@
         .fraction-display {
             display: inline-flex;
             align-items: center;
-            font-size: 26px;
+            font-size: 24px;
             color: #ffeb3b;
-            margin-left: 10px;
+            margin-left: 8px;
         }
 
         .frac {
@@ -171,7 +191,7 @@
             flex-direction: column;
             vertical-align: middle;
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             margin-left: 4px;
         }
 
@@ -179,18 +199,18 @@
         .frac span.bottom { padding: 0 2px; }
 
         #controls-hint {
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: 8px;
+            font-size: 13px;
             color: #a0a0a0;
         }
     </style>
 </head>
 <body>
 
+<!-- CAPA DO JOGO -->
 <div id="menu-overlay">
     <div class="modal-card">
-        <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img brand-menu-img">
-        <h1 class="modal-title">PAC-MAN FRACTIONS</h1>
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
         
         <div class="section-title">SELECT MATH LEVEL</div>
         <div class="btn-group">
@@ -207,21 +227,30 @@
         </div>
 
         <button class="btn-option btn-start" onclick="startGame()">START GAME</button>
+
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
     </div>
 </div>
 
 <div id="end-overlay">
     <div class="modal-card">
-        <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img brand-menu-img">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
         <h1 class="modal-title" id="end-title">GAME OVER</h1>
-        <div id="end-stats" style="font-size: 16px; text-align: left; margin: 15px 0; line-height: 1.6;"></div>
-        <div id="end-buttons-container"></div>
+        <div id="end-stats" style="font-size: 15px; text-align: left; margin: 15px 0; line-height: 1.6;"></div>
+        <div id="end-buttons-container" style="display:flex; justify-content:center; gap:10px;"></div>
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
     </div>
 </div>
 
 <div id="game-container">
     <div id="hud">
-        <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img brand-hud-img">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img brand-hud-img" onerror="this.style.display='none'">
         <div class="hud-stats-bar">
             <div>LVL: <span id="level-display">1</span></div>
             <div>PROG: <span id="progress-display">0</span>/5</div>
@@ -236,16 +265,29 @@
     </div>
     <canvas id="gameCanvas" width="750" height="400"></canvas>
     <div id="ui-panel">
-        EAT THE GHOST WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
+        EAT THE PAPER WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
         <span id="target-fraction"></span>
     </div>
-    <div id="controls-hint">Hold Arrow Keys to move Pac-Man.</div>
+    <div id="controls-hint">Use Arrow Keys / Teclas de Seta para mover o Monstrinho.</div>
 </div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const GRID_SIZE = 25;
+
+// Carregamento das imagens do monstrinho
+const monsterImages = {
+    horizontal: new Image(),
+    horizontalba: new Image(),
+    vertical: new Image(),
+    verticalba: new Image()
+};
+
+monsterImages.horizontal.src = 'horizontal.png';
+monsterImages.horizontalba.src = 'horizontalba.png';
+monsterImages.vertical.src = 'vertical.png';
+monsterImages.verticalba.src = 'verticalba.png';
 
 const map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -269,9 +311,9 @@ const map = [
 map[0][14] = 0; map[0][15] = 0;
 map[15][14] = 0; map[15][15] = 0;
 
-let pacman = { x: 1, y: 1, dx: 0, dy: 0, radius: 9, speed: 0.08, direction: 'right' };
+let pacman = { x: 1, y: 1, dx: 0, dy: 0, speed: 0.1, direction: 'right' };
+let mouthFrame = 0;
 let ghosts = [];
-const ghostColors = ['#ff4d4d', '#ff9933', '#33ccff', '#ff66cc', '#cc66ff'];
 const spawnPoints = [
     {x: 1, y: 13}, {x: 28, y: 13}, {x: 1, y: 9}, {x: 28, y: 9}, {x: 14, y: 1}
 ];
@@ -285,7 +327,7 @@ let levelProgress = 0;
 let timeLeft = 0;
 let timerInterval = null;
 let isPaused = false;
-let isGameOver = false;
+let isGameOver = true;
 let activeKeys = {};
 let currentProblemData = null;
 
@@ -447,7 +489,7 @@ function setupGhostsForCurrentProblem() {
     while(options.length < ghostCount) {
         if (modeType === 'improper') {
             let fDen = Math.floor(Math.random() * (getDenominatorRange().max - 2 + 1)) + 2;
-            let fNum = Math.floor(Math.random() * (fDen * 5)) + 1;
+            let fNum = Math.floor(Math.random() * (fDen * 4)) + 1;
             if (fNum * den !== (whole * den + num) * fDen) {
                 options.push({ num: fNum, den: fDen, type: 'improper' });
             }
@@ -475,7 +517,7 @@ function setupGhostsForCurrentProblem() {
             x: spawnPoints[index].x,
             y: spawnPoints[index].y,
             dx: 0, dy: 0, fraction: opt, isCorrect: isCorrect,
-            color: ghostColors[index], speed: baseSpeed
+            speed: baseSpeed
         };
     });
 
@@ -524,7 +566,7 @@ function handleLifeLoss(reason) {
     if (lives <= 0) {
         endGame(false);
     } else {
-        alert(`${reason} You lost a life! Lives remaining: ${lives}`);
+        alert(`${reason} Você perdeu uma vida! Vidas restantes: ${lives}`);
         resetPositions();
         startTimer();
     }
@@ -575,6 +617,13 @@ function update() {
     if (activeKeys["ArrowLeft"])  { pacman.dx = -1; pacman.direction = 'left'; }
     if (activeKeys["ArrowRight"]) { pacman.dx = 1;  pacman.direction = 'right'; }
 
+    let moving = (pacman.dx !== 0 || pacman.dy !== 0);
+    if (moving) {
+        mouthFrame = (mouthFrame + 0.15) % 2;
+    } else {
+        mouthFrame = 0;
+    }
+
     let newX = pacman.x + pacman.dx * pacman.speed;
     let newY = pacman.y + pacman.dy * pacman.speed;
 
@@ -594,7 +643,7 @@ function update() {
         let gx = Math.round(ghost.x);
         let gy = Math.round(ghost.y);
 
-        if (Math.abs(ghost.x - gx) < 0.05 && Math.abs(ghost.y - gy) < 0.05) {
+        if (Math.abs(ghost.x - gx) < 0.08 && Math.abs(ghost.y - gy) < 0.08) {
             let possibleDirs = [];
             if (canMoveTo(gx + 1, gy)) possibleDirs.push({dx: 1, dy: 0});
             if (canMoveTo(gx - 1, gy)) possibleDirs.push({dx: -1, dy: 0});
@@ -632,7 +681,7 @@ function update() {
                     generateNewProblem();
                 }
             } else {
-                handleLifeLoss("WRONG GHOST!");
+                handleLifeLoss("WRONG FRACTION!");
             }
         }
     });
@@ -641,6 +690,7 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // 1. Labirinto
     for (let r = 0; r < map.length; r++) {
         for (let c = 0; c < map[r].length; c++) {
             if (map[r][c] === 1) {
@@ -650,65 +700,84 @@ function draw() {
         }
     }
 
+    // 2. Monstrinho Usando as Suas Imagens PNG
     let px = pacman.x * GRID_SIZE + GRID_SIZE / 2;
     let py = pacman.y * GRID_SIZE + GRID_SIZE / 2;
+    let size = 26;
 
     ctx.save();
     ctx.translate(px, py);
 
-    let startAngle = 0.2 * Math.PI;
-    let endAngle = 1.8 * Math.PI;
-    let eyeX = 2, eyeY = -5;
+    let isOpen = Math.floor(mouthFrame) === 1;
+    let imgToDraw = null;
 
-    if (pacman.direction === 'left') {
-        ctx.scale(-1, 1);
-    } else if (pacman.direction === 'up') {
-        ctx.rotate(1.5 * Math.PI);
-    } else if (pacman.direction === 'down') {
-        ctx.rotate(0.5 * Math.PI);
+    if (pacman.direction === 'left' || pacman.direction === 'right') {
+        imgToDraw = isOpen ? monsterImages.horizontalba : monsterImages.horizontal;
+        if (pacman.direction === 'right') {
+            ctx.scale(-1, 1); // Espelha horizontalmente se for para a direita
+        }
+    } else { // 'up' ou 'down'
+        imgToDraw = isOpen ? monsterImages.verticalba : monsterImages.vertical;
+        if (pacman.direction === 'down') {
+            ctx.scale(1, -1); // Espelha verticalmente se for para baixo
+        }
     }
 
-    ctx.fillStyle = "#ffff00";
-    ctx.beginPath();
-    ctx.arc(0, 0, pacman.radius, startAngle, endAngle);
-    ctx.lineTo(0, 0);
-    ctx.fill();
-
-    ctx.fillStyle = "#000000";
-    ctx.beginPath();
-    ctx.arc(eyeX, eyeY, 2, 0, Math.PI * 2);
-    ctx.fill();
-
+    // Desenha a imagem centralizada
+    ctx.drawImage(imgToDraw, -size/2, -size/2, size, size);
     ctx.restore();
 
+    // 3. Folhas de Caderno com Frações
     ghosts.forEach(ghost => {
         let gx = ghost.x * GRID_SIZE + GRID_SIZE / 2;
         let gy = ghost.y * GRID_SIZE + GRID_SIZE / 2;
 
-        ctx.fillStyle = ghost.color;
-        ctx.beginPath();
-        ctx.arc(gx, gy - 2, 11, Math.PI, 0, false);
-        ctx.lineTo(gx + 11, gy + 11);
-        ctx.lineTo(gx - 11, gy + 11);
-        ctx.closePath();
-        ctx.fill();
+        ctx.save();
+        ctx.translate(gx, gy);
 
+        let w = 22, h = 24;
+        
+        // Fundo Branco da Folha
         ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-w/2, -h/2, w, h);
+
+        // Linhas Azuis do Caderno
+        ctx.strokeStyle = "#a0c4ff";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-w/2, -h/2 + 6); ctx.lineTo(w/2, -h/2 + 6);
+        ctx.moveTo(-w/2, -h/2 + 12); ctx.lineTo(w/2, -h/2 + 12);
+        ctx.moveTo(-w/2, -h/2 + 18); ctx.lineTo(w/2, -h/2 + 18);
+        ctx.stroke();
+
+        // Margem Vermelha
+        ctx.strokeStyle = "#ffadad";
+        ctx.beginPath();
+        ctx.moveTo(-w/2 + 4, -h/2); ctx.lineTo(-w/2 + 4, h/2);
+        ctx.stroke();
+
+        // Texto da Fração
+        ctx.fillStyle = "#000000";
         ctx.textAlign = "center";
 
         if (ghost.fraction.type === 'improper') {
-            ctx.font = "bold 11px Arial";
-            ctx.fillText(ghost.fraction.num, gx, gy - 2);
-            ctx.fillRect(gx - 6, gy, 12, 1);
-            ctx.fillText(ghost.fraction.den, gx, gy + 10);
+            ctx.font = "bold 10px Arial";
+            ctx.fillText(ghost.fraction.num, 1, -2);
+            ctx.fillRect(-4, 0, 10, 1);
+            ctx.fillText(ghost.fraction.den, 1, 9);
         } else {
-            ctx.font = "bold 11px Arial";
-            ctx.fillText(ghost.fraction.whole, gx - 6, gy + 4);
-            ctx.font = "bold 8px Arial";
-            ctx.fillText(ghost.fraction.num, gx + 5, gy - 2);
-            ctx.fillRect(gx + 1, gy, 8, 1);
-            ctx.fillText(ghost.fraction.den, gx + 5, gy + 8);
+            ctx.font = "bold 9px Arial";
+            ctx.fillText(ghost.fraction.whole, -5, 4);
+            ctx.font = "bold 7px Arial";
+            ctx.fillText(ghost.fraction.num, 4, -2);
+            ctx.fillRect(0, 0, 8, 1);
+            ctx.fillText(ghost.fraction.den, 4, 8);
         }
+
+        ctx.restore();
     });
 }
 
@@ -718,6 +787,7 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+// Inicia o loop de renderização do jogo
 gameLoop();
 </script>
 </body>
