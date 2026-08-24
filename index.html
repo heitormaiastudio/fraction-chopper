@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction Chopper</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #0d1b1e;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 1.5s ease;
+            overflow: hidden;
+        }
+
+        .brand-logo-img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .game-main-logo {
+            width: 300px;
+            max-width: 90%;
+            margin: 0 auto 15px auto;
+        }
+
+        .brand-hud-img {
+            height: 60px;
+            margin-bottom: 12px;
+        }
+
+        .offered-by-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .offered-by-text {
+            font-size: 11px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .offered-by-img {
+            width: 130px;
+        }
+
+        #menu-overlay, #end-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 27, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #end-overlay { display: none; }
+
+        .modal-card {
+            background-color: #062319;
+            border: 4px solid #00ffcc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 255, 200, 0.3);
+            max-width: 480px;
+            width: 90%;
+        }
+
+        .modal-title { color: #00ffcc; margin-top: 5px; margin-bottom: 10px; }
+        .section-title { color: #ffeb3b; margin-top: 12px; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
+
+        .btn-group { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; }
+
+        .btn-option {
+            background-color: #00aa55;
+            color: white;
+            border: 2px solid transparent;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-option:hover {
+            background-color: #00ffcc;
+            color: #000;
+        }
+
+        .btn-option.selected {
+            background-color: #00ffcc;
+            color: #000;
+            border-color: #ffffff;
+        }
+
+        .btn-start {
+            background-color: #ff9933;
+            color: #000;
+            font-size: 16px;
+            width: 80%;
+            margin-top: 12px;
+            padding: 10px;
+        }
+
+        #game-container {
+            position: relative;
+            text-align: center;
+            background-color: #062319;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 150, 0.2);
+            border: 4px solid #00ffcc;
+            transition: background-color 1.5s ease;
+            display: none;
+        }
+
+        #hud {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .hud-stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffeb3b;
+        }
+
+        .hud-buttons { display: flex; gap: 6px; }
+
+        .btn-hud {
+            background-color: #ff9933;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn-hud:hover { background-color: #ffeb3b; }
+
+        canvas {
+            background-color: #001f11;
+            border: 2px solid #00ffcc;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #ui-panel {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .fraction-display {
+            display: inline-flex;
+            align-items: center;
+            font-size: 24px;
+            color: #ffeb3b;
+            margin-left: 8px;
+        }
+
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 16px;
+            margin-left: 4px;
+        }
+
+        .frac span.top { border-bottom: 2px solid #ffeb3b; padding: 0 2px; }
+        .frac span.bottom { padding: 0 2px; }
+
+        #controls-hint {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="menu-overlay">
+    <div class="modal-card">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
+        
+        <div class="section-title">SELECT MATH LEVEL</div>
+        <div class="btn-group">
+            <button class="btn-option selected" id="lvl-1" onclick="selectLevel(1)">Level 1 (2–5)</button>
+            <button class="btn-option" id="lvl-2" onclick="selectLevel(2)">Level 2 (2–8)</button>
+            <button class="btn-option" id="lvl-3" onclick="selectLevel(3)">Level 3 (2–12)</button>
+        </div>
+
+        <div class="section-title">SELECT TIMER MODE</div>
+        <div class="btn-group">
+            <button class="btn-option selected" id="tm-none" onclick="selectTimer('none')">No Timer</button>
+            <button class="btn-option" id="tm-60" onclick="selectTimer('60')">60s Mode</button>
+            <button class="btn-option" id="tm-30" onclick="selectTimer('30')">30s Mode</button>
+        </div>
+
+        <button class="btn-option btn-start" onclick="startGame()">START GAME</button>
+
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
+
+<div id="end-overlay">
+    <div class="modal-card">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
+        <h1 class="modal-title" id="end-title">GAME OVER</h1>
+        <div id="end-stats" style="font-size: 15px; text-align: left; margin: 15px 0; line-height: 1.6;"></div>
+        <div id="end-buttons-container" style="display:flex; justify-content:center; gap:10px;"></div>
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
+
+<div id="game-container">
+    <div id="hud">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-hud-img" onerror="this.style.display='none'">
+        <div class="hud-stats-bar">
+            <div>LVL: <span id="level-display">1</span></div>
+            <div>PROG: <span id="progress-display">0</span>/5</div>
+            <div>SCORE: <span id="score-display">0</span></div>
+            <div>LIVES: <span id="lives-display">3</span></div>
+            <div>TIME: <span id="timer-display">OFF</span></div>
+            <div class="hud-buttons">
+                <button id="btn-pause" class="btn-hud" onclick="togglePause()">PAUSE</button>
+                <button class="btn-hud" onclick="showMainMenu()">MENU</button>
+            </div>
+        </div>
+    </div>
+    <canvas id="gameCanvas" width="750" height="400"></canvas>
+    <div id="ui-panel">
+        EAT THE PAPER WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
+        <span id="target-fraction"></span>
+    </div>
+    <div id="controls-hint">Use Arrow Keys to move the Monster.</div>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const GRID_SIZE = 25;
+
+const monsterImages = {
+    horizontal: new Image(),
+    horizontalba: new Image(),
+    vertical: new Image(),
+    verticalba: new Image()
+};
+
+monsterImages.horizontal.src = 'horizontal.png';
+monsterImages.horizontalba.src = 'horizontalba.png';
+monsterImages.vertical.src = 'vertical.png';
+monsterImages.verticalba.src = 'verticalba.png';
+
+const feedbackImages = {
+    goodjob: new Image(),
+    twomore: new Image(),
+    onemore: new Image(),
+    youwin: new Image(),
+    youlose: new Image()
+};
+
+feedbackImages.goodjob.src = 'goodjob.png';
+feedbackImages.twomore.src = 'twomore.png';
+feedbackImages.onemore.src = 'onemore.png';
+feedbackImages.youwin.src = 'youwin.png';
+feedbackImages.youlose.src = 'youlose.png';
+
+let feedbackManager = {
+    image: null,
+    timer: 0,
+    goodJobDuration: 60,
+    tryAgainDuration: 120,
+    endGameDuration: 120
+};
+
+let shakeManager = {
+    timer: 0,
+    duration: 60,
+    intensity: 3
+};
+
+const map = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1],
+    [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+map[0][14] = 0; map[0][15] = 0;
+map[15][14] = 0; map[15][15] = 0;
+
+let pacman = { x: 1, y: 1, dx: 0, dy: 0, speed: 0.1, direction: 'right' };
+let mouthFrame = 0;
+let ghosts = [];
+const spawnPoints = [
+    {x: 1, y: 13}, {x: 28, y: 13}, {x: 1, y: 9}, {x: 28, y: 9}, {x: 14, y: 1}
+];
+
+let selectedLevel = 1;
+let selectedTimerMode = 'none';
+
+let score = 0;
+let lives = 3;
+let levelProgress = 0;
+let timeLeft = 0;
+let timerInterval = null;
+let isPaused = false;
+let isGameOver = true;
+let activeKeys = {};
+let currentProblemData = null;
+let gameOutcome = false;
+let recentProblemsHistory = [];
+
+const stageColors = [
+    ["#0d1b1e", "#1a2a3a", "#2b213a", "#3a1c1c", "#4a1100"],
+    ["#0f2027", "#203a43", "#2c5364", "#4b1248", "#f0c27b"],
+    ["#111111", "#1e3c72", "#2a5298", "#e15f41", "#c44569"]
+];
+
+function selectLevel(lvl) {
+    selectedLevel = lvl;
+    document.querySelectorAll('#lvl-1, #lvl-2, #lvl-3').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`lvl-${lvl}`).classList.add('selected');
+}
+
+function selectTimer(tm) {
+    selectedTimerMode = tm;
+    document.querySelectorAll('#tm-none, #tm-60, #tm-30').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`tm-${tm}`).classList.add('selected');
+}
+
+function isWall(x, y) {
+    let gx = Math.floor(x);
+    let gy = Math.floor(y);
+
+    // Permitir movimento fora dos limites nos túneis horizontais (linha 4)
+    if (gy === 4 && (gx < 0 || gx >= map[0].length)) return false;
+
+    // Permitir movimento fora dos limites nos túneis verticais (colunas 14 e 15)
+    if ((gx === 14 || gx === 15) && (gy < 0 || gy >= map.length)) return false;
+
+    if (gy < 0 || gy >= map.length || gx < 0 || gx >= map[0].length) return true;
+    return map[gy][gx] === 1;
+}
+
+function canMoveTo(x, y) {
+    const margin = 0.15;
+    return !isWall(x + margin, y + margin) &&
+           !isWall(x + 1 - margin, y + margin) &&
+           !isWall(x + margin, y + 1 - margin) &&
+           !isWall(x + 1 - margin, y + 1 - margin);
+}
+
+function showMainMenu() {
+    clearInterval(timerInterval);
+    isGameOver = true;
+    document.getElementById("menu-overlay").style.display = "flex";
+    document.getElementById("end-overlay").style.display = "none";
+    document.getElementById("game-container").style.display = "none";
+}
+
+function startGame() {
+    document.getElementById("menu-overlay").style.display = "none";
+    document.getElementById("end-overlay").style.display = "none";
+    document.getElementById("game-container").style.display = "block";
+    
+    score = 0;
+    lives = 3;
+    levelProgress = 0;
+    isPaused = false;
+    isGameOver = false;
+    recentProblemsHistory = [];
+    document.getElementById("btn-pause").innerText = "PAUSE";
+    
+    feedbackManager.timer = 0;
+    shakeManager.timer = 0;
+
+    updateHUD();
+    updateTheme();
+    generateNewProblem();
+}
+
+function togglePause() {
+    if (isGameOver) return;
+    isPaused = !isPaused;
+    document.getElementById("btn-pause").innerText = isPaused ? "RESUME" : "PAUSE";
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    if (selectedTimerMode === 'none') {
+        document.getElementById("timer-display").innerText = "OFF";
+        return;
+    }
+
+    timeLeft = selectedTimerMode === '30' ? 30 : 60;
+    document.getElementById("timer-display").innerText = timeLeft + "s";
+    
+    timerInterval = setInterval(() => {
+        if (!isPaused && !isGameOver && feedbackManager.timer <= 0) {
+            timeLeft--;
+            document.getElementById("timer-display").innerText = timeLeft + "s";
+            if (timeLeft <= 0) {
+                handleLifeLoss();
+            }
+        }
+    }, 1000);
+}
+
+function updateHUD() {
+    document.getElementById("level-display").innerText = selectedLevel;
+    document.getElementById("progress-display").innerText = levelProgress;
+    document.getElementById("score-display").innerText = score;
+    document.getElementById("lives-display").innerText = lives;
+}
+
+function updateTheme() {
+    let stage = levelProgress; 
+    if (stage > 4) stage = 4;
+    let palette = stageColors[selectedLevel - 1];
+    document.body.style.backgroundColor = palette[stage];
+    document.getElementById("game-container").style.backgroundColor = palette[stage];
+}
+
+function getDenominatorRange() {
+    if (selectedLevel === 1) return { min: 2, max: 5 };
+    if (selectedLevel === 2) return { min: 2, max: 8 };
+    return { min: 2, max: 12 };
+}
+
+function generateNewProblem() {
+    if (isGameOver) return;
+    let range = getDenominatorRange();
+    
+    let den, num, whole, modeType, currentKey;
+
+    do {
+        den = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+        num = Math.floor(Math.random() * (den - 1)) + 1;
+        whole = Math.floor(Math.random() * 4) + 1;
+
+        modeType = selectedLevel === 1 ? 'improper' : (selectedLevel === 2 ? 'mixed' : (Math.random() < 0.5 ? 'improper' : 'mixed'));
+        
+        currentKey = `${whole}_${num}_${den}_${modeType}`;
+    } while (recentProblemsHistory.includes(currentKey));
+
+    recentProblemsHistory.push(currentKey);
+    if (recentProblemsHistory.length > 4) {
+        recentProblemsHistory.shift();
+    }
+
+    currentProblemData = { whole, num, den, modeType };
+
+    let targetEl = document.getElementById("target-fraction");
+    let instructionType = document.getElementById("instruction-type");
+
+    let targetImproperNum = whole * den + num;
+
+    if (modeType === 'improper') {
+        instructionType.innerText = "IMPROPER FRACTION";
+        targetEl.innerHTML = `
+            <span class="fraction-display">${whole}
+                <span class="frac"><span class="top">${num}</span><span class="bottom">${den}</span></span>
+            </span>`;
+    } else {
+        instructionType.innerText = "MIXED NUMBER";
+        targetEl.innerHTML = `
+            <span class="fraction-display">
+                <span class="frac"><span class="top">${targetImproperNum}</span><span class="bottom">${den}</span></span>
+            </span>`;
+    }
+
+    setupGhostsForCurrentProblem();
+    startTimer();
+}
+
+function setupGhostsForCurrentProblem() {
+    let { whole, num, den, modeType } = currentProblemData;
+    let ghostCount = selectedLevel === 1 ? 4 : 5;
+    let options = [];
+
+    let correctNum = whole * den + num;
+    let range = getDenominatorRange();
+
+    let correctOpt = (modeType === 'improper') 
+        ? { num: correctNum, den: den, type: 'improper' }
+        : { whole: whole, num: num, den: den, type: 'mixed' };
+    options.push(correctOpt);
+
+    if (modeType === 'improper') {
+        let sameDenNum;
+        do {
+            sameDenNum = Math.floor(Math.random() * (den * 2)) + 1;
+        } while (sameDenNum === correctNum);
+        
+        options.push({ num: sameDenNum, den: den, type: 'improper' });
+    } else {
+        let sameDenWhole, sameDenNum;
+        do {
+            sameDenWhole = Math.floor(Math.random() * 4) + 1;
+            sameDenNum = Math.floor(Math.random() * (den - 1)) + 1;
+        } while (sameDenWhole === whole && sameDenNum === num);
+
+        options.push({ whole: sameDenWhole, num: sameDenNum, den: den, type: 'mixed' });
+    }
+
+    while (options.length < ghostCount) {
+        let fDen;
+        do {
+            fDen = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+        } while (fDen === den);
+
+        if (modeType === 'improper') {
+            let fNum = Math.floor(Math.random() * (fDen * 2)) + 1;
+            if (fNum * den !== correctNum * fDen) {
+                options.push({ num: fNum, den: fDen, type: 'improper' });
+            }
+        } else {
+            let fWhole = Math.floor(Math.random() * 4) + 1;
+            let fNum = Math.floor(Math.random() * (fDen - 1)) + 1;
+            
+            if ((fWhole * fDen + fNum) * den !== correctNum * fDen) {
+                options.push({ whole: fWhole, num: fNum, den: fDen, type: 'mixed' });
+            }
+        }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    let baseSpeed = selectedLevel === 1 ? 0.047 : 0.055;
+
+    ghosts = options.map((opt, index) => {
+        let isCorrect = (opt.type === 'improper') 
+            ? (opt.num * den === correctNum * opt.den)
+            : ((opt.whole * opt.den + opt.num) * den === correctNum * opt.den);
+
+        return {
+            x: spawnPoints[index].x,
+            y: spawnPoints[index].y,
+            dx: 0, dy: 0, fraction: opt, isCorrect: isCorrect,
+            speed: baseSpeed
+        };
+    });
+
+    resetPositions();
+}
+
+function resetPositions() {
+    pacman.x = 1;
+    pacman.y = 1;
+    pacman.dx = 0;
+    pacman.dy = 0;
+    pacman.direction = 'right';
+
+    ghosts.forEach((g, index) => {
+        g.x = spawnPoints[index].x;
+        g.y = spawnPoints[index].y;
+        g.dx = 0;
+        g.dy = 0;
+    });
+}
+
+window.addEventListener("keydown", e => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        activeKeys[e.key] = true;
+    }
+});
+
+window.addEventListener("keyup", e => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        delete activeKeys[e.key];
+    }
+});
+
+function calculatePoints() {
+    if (selectedTimerMode === '30') return Math.max(5, timeLeft * 3);
+    if (selectedTimerMode === '60') return Math.max(2, timeLeft);
+    return 10;
+}
+
+function handleLifeLoss() {
+    if (isGameOver) return;
+    lives--;
+    updateHUD();
+
+    if (lives <= 0) {
+        triggerEndSequence(false);
+    } else {
+        if (lives === 2) {
+            feedbackManager.image = feedbackImages.twomore;
+        } else if (lives === 1) {
+            feedbackManager.image = feedbackImages.onemore;
+        }
+        feedbackManager.timer = feedbackManager.tryAgainDuration;
+
+        resetPositions();
+        startTimer();
+    }
+}
+
+function triggerEndSequence(won) {
+    clearInterval(timerInterval);
+    gameOutcome = won;
+    feedbackManager.image = won ? feedbackImages.youwin : feedbackImages.youlose;
+    feedbackManager.timer = feedbackManager.endGameDuration;
+}
+
+function endGameOverlay() {
+    isGameOver = true;
+    document.getElementById("game-container").style.display = "none";
+    document.getElementById("end-overlay").style.display = "flex";
+    
+    document.getElementById("end-title").innerText = gameOutcome ? "VICTORY!" : "GAME OVER";
+    
+    document.getElementById("end-stats").innerHTML = `
+        <strong>FINAL SCORE:</strong> ${score}<br>
+        <strong>QUESTIONS COMPLETED:</strong> ${levelProgress}/5<br>
+        <strong>LIVES REMAINING:</strong> ${lives}<br>
+        <strong>LEVEL:</strong> ${selectedLevel} (${selectedTimerMode === 'none' ? 'No Timer' : selectedTimerMode + 's'})
+    `;
+
+    const btnContainer = document.getElementById("end-buttons-container");
+    btnContainer.innerHTML = "";
+
+    let btnAgain = document.createElement("button");
+    btnAgain.className = "btn-option";
+    btnAgain.innerText = "Play Again";
+    btnAgain.onclick = startGame;
+
+    let btnMenu = document.createElement("button");
+    btnMenu.className = "btn-option";
+    btnMenu.innerText = "Main Menu";
+    btnMenu.onclick = showMainMenu;
+
+    btnContainer.appendChild(btnAgain);
+    btnContainer.appendChild(btnMenu);
+}
+
+function update() {
+    if (isPaused || isGameOver || feedbackManager.timer > 0) return;
+
+    pacman.dx = 0;
+    pacman.dy = 0;
+
+    if (activeKeys["ArrowUp"])    { pacman.dy = -1; pacman.direction = 'up'; }
+    if (activeKeys["ArrowDown"])  { pacman.dy = 1;  pacman.direction = 'down'; }
+    if (activeKeys["ArrowLeft"])  { pacman.dx = -1; pacman.direction = 'left'; }
+    if (activeKeys["ArrowRight"]) { pacman.dx = 1;  pacman.direction = 'right'; }
+
+    let moving = (pacman.dx !== 0 || pacman.dy !== 0);
+    if (moving) {
+        mouthFrame = (mouthFrame + 0.15) % 2;
+    } else {
+        mouthFrame = 0;
+    }
+
+    let newX = pacman.x + pacman.dx * pacman.speed;
+    let newY = pacman.y + pacman.dy * pacman.speed;
+
+    if (canMoveTo(newX, newY)) {
+        pacman.x = newX;
+        pacman.y = newY;
+    }
+
+    // TELEPORTE INSTANTÂNEO PACMAN
+    // Túnel Horizontal
+    if (pacman.x < -0.5) pacman.x = map[0].length - 0.5;
+    else if (pacman.x > map[0].length - 0.5) pacman.x = -0.5;
+
+    // Túnel Vertical
+    if (pacman.y < -0.5) pacman.y = map.length - 0.5;
+    else if (pacman.y > map.length - 0.5) pacman.y = -0.5;
+
+    ghosts.forEach(ghost => {
+        let gx = Math.round(ghost.x);
+        let gy = Math.round(ghost.y);
+
+        // Bloqueio de direção nos túneis
+        let inHorizTunnel = (gy === 4 && (ghost.x <= 0.5 || ghost.x >= map[0].length - 1.5));
+        let inVertTunnel = ((gx === 14 || gx === 15) && (ghost.y <= 0.5 || ghost.y >= map.length - 1.5));
+
+        if (inHorizTunnel) {
+            if (ghost.dx === 0) ghost.dx = (ghost.x <= 0.5) ? -1 : 1;
+            ghost.dy = 0;
+        } else if (inVertTunnel) {
+            if (ghost.dy === 0) ghost.dy = (ghost.y <= 0.5) ? -1 : 1;
+            ghost.dx = 0;
+        } else if (Math.abs(ghost.x - gx) < 0.05 && Math.abs(ghost.y - gy) < 0.05) {
+            let possibleDirs = [];
+            if (canMoveTo(gx + 1, gy)) possibleDirs.push({dx: 1, dy: 0});
+            if (canMoveTo(gx - 1, gy)) possibleDirs.push({dx: -1, dy: 0});
+            if (canMoveTo(gx, gy + 1)) possibleDirs.push({dx: 0, dy: 1});
+            if (canMoveTo(gx, gy - 1)) possibleDirs.push({dx: 0, dy: -1});
+
+            let validDirs = possibleDirs.filter(d => !(d.dx === -ghost.dx && d.dy === -ghost.dy));
+            let chosen = validDirs.length > 0 ? 
+                validDirs[Math.floor(Math.random() * validDirs.length)] : 
+                possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+
+            if (chosen) {
+                ghost.dx = chosen.dx;
+                ghost.dy = chosen.dy;
+            }
+        }
+
+        ghost.x += ghost.dx * ghost.speed;
+        ghost.y += ghost.dy * ghost.speed;
+
+        // TELEPORTE INSTANTÂNEO FANTASMAS / TOKENS
+        // Túnel Horizontal
+        if (ghost.x < -0.5) ghost.x = map[0].length - 0.5;
+        else if (ghost.x > map[0].length - 0.5) ghost.x = -0.5;
+
+        // Túnel Vertical
+        if (ghost.y < -0.5) ghost.y = map.length - 0.5;
+        else if (ghost.y > map.length - 0.5) ghost.y = -0.5;
+
+        let dist = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
+        if (dist < 0.6 && !isGameOver && feedbackManager.timer <= 0) {
+            if (ghost.isCorrect) {
+                score += calculatePoints();
+                levelProgress++;
+                
+                shakeManager.timer = shakeManager.duration;
+                updateHUD();
+                updateTheme();
+
+                if (levelProgress >= 5) {
+                    triggerEndSequence(true);
+                } else {
+                    feedbackManager.image = feedbackImages.goodjob;
+                    feedbackManager.timer = feedbackManager.goodJobDuration;
+                }
+            } else {
+                handleLifeLoss();
+            }
+        }
+    });
+}
+
+function draw() {
+    ctx.save();
+
+    if (shakeManager.timer > 0) {
+        let dx = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        let dy = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        ctx.translate(dx, dy); 
+        shakeManager.timer--;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const wallSize = 19;
+    const wallOffset = (GRID_SIZE - wallSize) / 2;
+
+    for (let r = 0; r < map.length; r++) {
+        for (let c = 0; c < map[r].length; c++) {
+            if (map[r][c] === 1) {
+                ctx.fillStyle = "#00aa55";
+                ctx.fillRect(c * GRID_SIZE + wallOffset, r * GRID_SIZE + wallOffset, wallSize, wallSize);
+            }
+        }
+    }
+
+    let px = pacman.x * GRID_SIZE + GRID_SIZE / 2;
+    let py = pacman.y * GRID_SIZE + GRID_SIZE / 2;
+    let size = 26;
+
+    ctx.save();
+    ctx.translate(px, py);
+
+    let isOpen = Math.floor(mouthFrame) === 1;
+    let imgToDraw = null;
+
+    if (pacman.direction === 'left' || pacman.direction === 'right') {
+        imgToDraw = isOpen ? monsterImages.horizontalba : monsterImages.horizontal;
+        if (pacman.direction === 'right') {
+            ctx.scale(-1, 1);
+        }
+    } else {
+        imgToDraw = isOpen ? monsterImages.verticalba : monsterImages.vertical;
+        if (pacman.direction === 'down') {
+            ctx.scale(1, -1);
+        }
+    }
+
+    ctx.drawImage(imgToDraw, -size/2, -size/2, size, size);
+    ctx.restore();
+
+    ghosts.forEach(ghost => {
+        let gx = ghost.x * GRID_SIZE + GRID_SIZE / 2;
+        let gy = ghost.y * GRID_SIZE + GRID_SIZE / 2;
+
+        ctx.save();
+        ctx.translate(gx, gy);
+
+        let w = 30, h = 34;
+        
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-w/2, -h/2, w, h);
+
+        ctx.strokeStyle = "#a0c4ff";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-w/2, -h/2 + 8); ctx.lineTo(w/2, -h/2 + 8);
+        ctx.moveTo(-w/2, -h/2 + 16); ctx.lineTo(w/2, -h/2 + 16);
+        ctx.moveTo(-w/2, -h/2 + 24); ctx.lineTo(w/2, -h/2 + 24);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#ffadad";
+        ctx.beginPath();
+        ctx.moveTo(-w/2 + 5, -h/2); ctx.lineTo(-w/2 + 5, h/2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#000000";
+        ctx.textAlign = "center";
+
+        if (ghost.fraction.type === 'improper') {
+            ctx.font = "bold 14px Arial";
+            ctx.fillText(ghost.fraction.num, 1, -2);
+            ctx.fillRect(-6, 1, 14, 2);
+            ctx.fillText(ghost.fraction.den, 1, 14);
+        } else {
+            ctx.font = "bold 13px Arial";
+            ctx.fillText(ghost.fraction.whole, -7, 5);
+            ctx.font = "bold 10px Arial";
+            ctx.fillText(ghost.fraction.num, 5, -3);
+            ctx.fillRect(0, 0, 10, 1.5);
+            ctx.fillText(ghost.fraction.den, 5, 11);
+        }
+
+        ctx.restore();
+    });
+
+    if (feedbackManager.timer > 0 && feedbackManager.image && feedbackManager.image.complete) {
+        let img = feedbackManager.image;
+        let w = img.width;
+        let h = img.height;
+        ctx.drawImage(img, canvas.width / 2 - w / 2, canvas.height / 2 - h / 2, w, h);
+        feedbackManager.timer--;
+
+        if (feedbackManager.timer === 0) {
+            if (feedbackManager.image === feedbackImages.youwin || feedbackManager.image === feedbackImages.youlose) {
+                endGameOverlay();
+            } else if (feedbackManager.image === feedbackImages.goodjob) {
+                generateNewProblem();
+            }
+        }
+    }
+
+    ctx.restore();
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
