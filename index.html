@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction Chopper</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #0d1b1e;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 1.5s ease;
+            overflow: hidden;
+        }
+
+        .brand-logo-img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .game-main-logo {
+            width: 280px;
+            max-width: 90%;
+            margin: 0 auto 10px auto;
+        }
+
+        .brand-hud-img {
+            height: 50px;
+            margin-bottom: 8px;
+        }
+
+        .offered-by-container {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .offered-by-text {
+            font-size: 10px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .offered-by-img {
+            width: 110px;
+        }
+
+        #menu-overlay, #end-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 27, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #end-overlay { display: none; }
+
+        .modal-card {
+            position: relative;
+            background-color: #062319;
+            border: 4px solid #00ffcc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 255, 200, 0.3);
+            max-width: 520px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title { color: #00ffcc; margin-top: 5px; margin-bottom: 10px; }
+        .section-title { color: #ffeb3b; margin-top: 10px; margin-bottom: 10px; font-weight: bold; font-size: 13px; text-transform: uppercase; }
+
+        .btn-group { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .btn-option {
+            background-color: #00aa55;
+            color: white;
+            border: 2px solid transparent;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-option:hover {
+            background-color: #00ffcc;
+            color: #000;
+        }
+
+        .btn-option.selected {
+            background-color: #00ffcc;
+            color: #000;
+            border-color: #ffffff;
+        }
+
+        .btn-subdesc {
+            font-size: 9px;
+            font-weight: normal;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        .btn-start {
+            background-color: #ff9933;
+            color: #000;
+            font-size: 15px;
+            width: 80%;
+            max-width: 320px;
+            margin: 10px auto 0 auto;
+            padding: 12px;
+            align-self: center;
+        }
+
+        .btn-nav-back {
+            background-color: #7f8c8d;
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 11px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            align-self: center;
+        }
+
+        .btn-sound-toggle {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #111;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .btn-sound-toggle:hover {
+            background-color: #00ffcc;
+            color: #000;
+        }
+
+        #game-container {
+            position: relative;
+            text-align: center;
+            background-color: #062319;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 150, 0.2);
+            border: 4px solid #00ffcc;
+            transition: background-color 1.5s ease;
+            display: none;
+        }
+
+        #hud {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .hud-stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 13px;
+            font-weight: bold;
+            color: #ffeb3b;
+        }
+
+        .hud-buttons { display: flex; gap: 6px; }
+
+        .btn-hud {
+            background-color: #ff9933;
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .btn-hud:hover { background-color: #ffeb3b; }
+
+        canvas {
+            background-color: #001f11;
+            border: 2px solid #00ffcc;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #ui-panel {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            max-width: 750px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .fraction-display {
+            display: inline-flex;
+            align-items: center;
+            font-size: 18px;
+            color: #ffeb3b;
+        }
+
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 13px;
+            margin-left: 3px;
+            margin-right: 3px;
+        }
+
+        .frac span.top { border-bottom: 2px solid #ffeb3b; padding: 0 2px; }
+        .frac span.bottom { padding: 0 2px; }
+
+        #target-fraction {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #controls-hint {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #a0a0a0;
+        }
+    </style>
+</head>
+<body onclick="startMenuMusic()">
+
+<div id="menu-overlay">
+    <div class="modal-card">
+        <button id="menu-sound-btn" class="btn-sound-toggle" onclick="toggleSound(event)">🔊 SOUND: ON</button>
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
+        
+        <div id="menu-step-year" style="width: 100%;">
+            <div class="section-title">SELECT YEAR GROUP</div>
+            <div class="btn-group">
+                <button class="btn-option" onclick="selectYearGroup('Year 3')">Year 3</button>
+                <button class="btn-option" onclick="selectYearGroup('Year 4')">Year 4</button>
+                <button class="btn-option" onclick="selectYearGroup('Year 5')">Year 5</button>
+                <button class="btn-option" onclick="selectYearGroup('Year 6')">Year 6</button>
+            </div>
+        </div>
+
+        <div id="menu-step-level" style="display: none; width: 100%;">
+            <div class="section-title" id="level-step-title">SELECT MATH LEVEL</div>
+            <div class="btn-group" id="level-buttons-container"></div>
+            <button class="btn-nav-back" onclick="showMenuStep('year')">← Back to Year Groups</button>
+        </div>
+
+        <div id="menu-step-timer" style="display: none; width: 100%;">
+            <div class="section-title">SELECT TIMER MODE</div>
+            <div class="btn-group">
+                <button class="btn-option selected" id="tm-none" onclick="selectTimer('none')">No Timer</button>
+                <button class="btn-option" id="tm-60" onclick="selectTimer('60')">60s Mode</button>
+                <button class="btn-option" id="tm-30" onclick="selectTimer('30')">30s Mode</button>
+            </div>
+            <button class="btn-option btn-start" onclick="startGame()">START GAME</button>
+            <br>
+            <button class="btn-nav-back" onclick="showMenuStep('level')">← Back to Levels</button>
+        </div>
+
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
+
+<div id="end-overlay">
+    <div class="modal-card">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-logo-img game-main-logo" onerror="this.style.display='none'">
+        <h1 class="modal-title" id="end-title">GAME OVER</h1>
+        <div id="end-stats" style="font-size: 14px; text-align: left; margin: 15px 0; line-height: 1.6;"></div>
+        <div id="end-buttons-container" style="display:flex; justify-content:center; gap:10px; width: 100%;"></div>
+        <div class="offered-by-container">
+            <span class="offered-by-text">Offered by:</span>
+            <img src="logo-maia.png" alt="Maia Studio" class="brand-logo-img offered-by-img" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
+
+<div id="game-container">
+    <div id="hud">
+        <img src="fractionchopperlogo.png" alt="Fraction Chopper" class="brand-hud-img" onerror="this.style.display='none'">
+        <div class="hud-stats-bar">
+            <div>GROUP: <span id="year-display">Y3</span></div>
+            <div>LVL: <span id="level-display">L1</span></div>
+            <div>PROG: <span id="progress-display">0</span>/<span id="total-progress-display">10</span></div>
+            <div>SCORE: <span id="score-display">0</span></div>
+            <div>LIVES: <span id="lives-display">3</span></div>
+            <div>TIME: <span id="timer-display">OFF</span></div>
+            <div class="hud-buttons">
+                <button id="hud-sound-btn" class="btn-hud" onclick="toggleSound(event)">🔊 SOUND: ON</button>
+                <button id="btn-pause" class="btn-hud" onclick="togglePause()">PAUSE</button>
+                <button class="btn-hud" onclick="showMainMenu()">MENU</button>
+            </div>
+        </div>
+    </div>
+    <canvas id="gameCanvas" width="750" height="400"></canvas>
+    <div id="ui-panel">
+        EAT THE PAPER WITH THE <span id="instruction-type">FRACTION</span> EQUAL TO: 
+        <span id="target-fraction"></span>
+    </div>
+    <div id="controls-hint">Use Arrow Keys to move the Monster.</div>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// ARQUIVOS DE ÁUDIO
+const audioTheme = new Audio('themesong.wav');
+audioTheme.loop = true;
+
+const audioLose = new Audio('lose.ogg');
+const audioWin = new Audio('winner.ogg');
+const audioRight = new Audio('right.ogg');
+const audioWrong = new Audio('wrong.mp3');
+
+let isMusicPlaying = false;
+let isMuted = false;
+
+function toggleSound(e) {
+    if (e) e.stopPropagation();
+    isMuted = !isMuted;
+    
+    let label = isMuted ? "🔇 SOUND: OFF" : "🔊 SOUND: ON";
+    document.getElementById("menu-sound-btn").innerText = label;
+    document.getElementById("hud-sound-btn").innerText = label;
+
+    if (isMuted) {
+        stopMenuMusic();
+    } else if (document.getElementById("menu-overlay").style.display !== "none") {
+        startMenuMusic();
+    }
+}
+
+function playSFX(sound) {
+    if (isMuted) return;
+    sound.currentTime = 0;
+    sound.play().catch(e => console.log("Audio play error:", e));
+}
+
+function startMenuMusic() {
+    if (!isMuted && !isMusicPlaying && document.getElementById("menu-overlay").style.display !== "none") {
+        audioTheme.play().then(() => {
+            isMusicPlaying = true;
+        }).catch(e => console.log("User interaction needed for audio."));
+    }
+}
+
+function stopMenuMusic() {
+    audioTheme.pause();
+    audioTheme.currentTime = 0;
+    isMusicPlaying = false;
+}
+
+const monsterImages = {
+    horizontal: new Image(), horizontalba: new Image(),
+    vertical: new Image(), verticalba: new Image()
+};
+monsterImages.horizontal.src = 'horizontal.png';
+monsterImages.horizontalba.src = 'horizontalba.png';
+monsterImages.vertical.src = 'vertical.png';
+monsterImages.verticalba.src = 'verticalba.png';
+
+const feedbackImages = {
+    goodjob: new Image(), twomore: new Image(),
+    onemore: new Image(), youwin: new Image(), youlose: new Image()
+};
+feedbackImages.goodjob.src = 'goodjob.png';
+feedbackImages.twomore.src = 'twomore.png';
+feedbackImages.onemore.src = 'onemore.png';
+feedbackImages.youwin.src = 'youwin.png';
+feedbackImages.youlose.src = 'youlose.png';
+
+let feedbackManager = { image: null, timer: 0, goodJobDuration: 60, tryAgainDuration: 120, endGameDuration: 120 };
+let shakeManager = { timer: 0, duration: 60, intensity: 3 };
+
+const map = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,1,1,0,1],
+    [1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1],
+    [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1,1,1],
+    [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+map[0][14] = 0; map[0][15] = 0;
+map[15][14] = 0; map[15][15] = 0;
+
+let pacman = { x: 1, y: 1, dx: 0, dy: 0, speed: 0.1, direction: 'right' };
+let mouthFrame = 0;
+let ghosts = [];
+
+const spawnPoints5 = [
+    {x: 1, y: 13}, {x: 28, y: 13}, {x: 1, y: 9}, {x: 28, y: 9}, {x: 14, y: 6}
+];
+const spawnPoints4 = [
+    {x: 1, y: 13}, {x: 28, y: 13}, {x: 1, y: 9}, {x: 28, y: 9}
+];
+
+const yearGroupData = {
+    "Year 3": [
+        { level: 1, name: "Level 1: Visual Fractions", desc: "Phase A: 5 Whole | Phase B: 5 Non-Unit (Denom 2-6)" },
+        { level: 2, name: "Level 2: Completing 1 Whole", desc: "Phase A: 5 Visual | Phase B: 5 Numerical" },
+        { level: 3, name: "Level 3: Intro to Equivalent Fractions", desc: "Phase A: 5 Visual | Phase B: 5 Numerical" }
+    ],
+    "Year 4": [
+        { level: 1, name: "Level 1: Read Mixed Numbers", desc: "Phase A: 5 Visual | Phase B: 5 Numerical" },
+        { level: 2, name: "Level 2: Improper Fractions", desc: "Phase A: 5 Visual | Phase B: 5 Numerical" },
+        { level: 3, name: "Level 3: Mixed Operations", desc: "10 Numerical Questions (Denom up to 12)" }
+    ],
+    "Year 5": [
+        { level: 1, name: "Level 1: Tenths & Fractions", desc: "Phase A: Tenths Visuals | Phase B: Common Decimals" },
+        { level: 2, name: "Level 2: Percentages & FDP Equivalence", desc: "Phase A: % Concept | Phase B: FDP Triangles" },
+        { level: 3, name: "Level 3: Partitioning & Advanced Sums", desc: "Phase A: Basic Partitioning | Phase B: Advanced Decimal Sums" }
+    ],
+    "Year 6": [
+        { level: 1, name: "Level 1: Simplifying Fractions", desc: "Phase A: Simplification (Zeros) | Phase B: Simplification (General)" },
+        { level: 2, name: "Level 2: Basic Operations", desc: "Phase A: Same Denom (+/-) | Phase B: Fraction Mult/Div" },
+        { level: 3, name: "Level 3: Diff Denom & Decimals", desc: "Phase A: Diff Denom (+/-) | Phase B: Mult/Div & Basic Decimals" },
+        { level: 4, name: "Level 4: Advanced Decimals & Word Problems", desc: "Phase A: Carrying Decimals | Phase B: Word Problems" }
+    ]
+};
+
+let selectedYearGroup = "Year 3";
+let selectedLevel = 1;
+let selectedTimerMode = 'none';
+
+let score = 0, lives = 3, levelProgress = 0, targetQuestions = 10, timeLeft = 0;
+let timerInterval = null, isPaused = false, isGameOver = true;
+let activeKeys = {}, currentProblemData = null, gameOutcome = false;
+let lastProblemKey = "";
+
+const stageColors = [
+    ["#0d1b1e", "#1a2a3a", "#2b213a", "#3a1c1c", "#4a1100"],
+    ["#0f2027", "#203a43", "#2c5364", "#4b1248", "#f0c27b"],
+    ["#111111", "#1e3c72", "#2a5298", "#e15f41", "#c44569"]
+];
+
+function gcd(a, b) {
+    return b === 0 ? a : gcd(b, a % b);
+}
+
+function selectYearGroup(year) {
+    if (!yearGroupData[year]) return;
+
+    selectedYearGroup = year;
+    const container = document.getElementById("level-buttons-container");
+    container.innerHTML = "";
+    document.getElementById("level-step-title").innerText = `${year} - SELECT LEVEL`;
+
+    yearGroupData[year].forEach(lvlObj => {
+        const btn = document.createElement("button");
+        btn.className = "btn-option";
+        btn.style.width = "100%";
+        btn.style.maxWidth = "360px";
+        btn.innerHTML = `${lvlObj.name} <span class="btn-subdesc">(${lvlObj.desc})</span>`;
+        btn.onclick = () => {
+            selectedLevel = lvlObj.level;
+            document.querySelectorAll("#level-buttons-container .btn-option").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            showMenuStep('timer');
+        };
+        container.appendChild(btn);
+    });
+
+    showMenuStep('level');
+}
+
+function showMenuStep(step) {
+    document.getElementById("menu-step-year").style.display = step === 'year' ? 'block' : 'none';
+    document.getElementById("menu-step-level").style.display = step === 'level' ? 'block' : 'none';
+    document.getElementById("menu-step-timer").style.display = step === 'timer' ? 'block' : 'none';
+}
+
+function selectTimer(tm) {
+    selectedTimerMode = tm;
+    document.querySelectorAll('#tm-none, #tm-60, #tm-30').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`tm-${tm}`).classList.add('selected');
+}
+
+function isWall(x, y) {
+    let gx = Math.floor(x), gy = Math.floor(y);
+    if (gy === 4 && (gx < 0 || gx >= map[0].length)) return false;
+    if ((gx === 14 || gx === 15) && (gy < 0 || gy >= map.length)) return false;
+    if (gy < 0 || gy >= map.length || gx < 0 || gx >= map[0].length) return true;
+    return map[gy][gx] === 1;
+}
+
+function canMoveTo(x, y) {
+    const margin = 0.15;
+    return !isWall(x + margin, y + margin) && !isWall(x + 1 - margin, y + margin) &&
+           !isWall(x + margin, y + 1 - margin) && !isWall(x + 1 - margin, y + 1 - margin);
+}
+
+function showMainMenu() {
+    clearInterval(timerInterval);
+    isGameOver = true;
+    showMenuStep('year');
+    document.getElementById("menu-overlay").style.display = "flex";
+    document.getElementById("end-overlay").style.display = "none";
+    document.getElementById("game-container").style.display = "none";
+    
+    startMenuMusic();
+}
+
+function startGame() {
+    stopMenuMusic();
+    document.getElementById("menu-overlay").style.display = "none";
+    document.getElementById("end-overlay").style.display = "none";
+    document.getElementById("game-container").style.display = "block";
+    
+    score = 0; lives = 3; levelProgress = 0;
+    targetQuestions = 10;
+    lastProblemKey = "";
+    
+    isPaused = false; isGameOver = false;
+    document.getElementById("btn-pause").innerText = "PAUSE";
+    
+    feedbackManager.timer = 0;
+    shakeManager.timer = 0;
+
+    updateHUD();
+    updateTheme();
+    generateNewProblem();
+}
+
+function togglePause() {
+    if (isGameOver) return;
+    isPaused = !isPaused;
+    document.getElementById("btn-pause").innerText = isPaused ? "RESUME" : "PAUSE";
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    if (selectedTimerMode === 'none') {
+        document.getElementById("timer-display").innerText = "OFF";
+        return;
+    }
+
+    timeLeft = selectedTimerMode === '30' ? 30 : 60;
+    document.getElementById("timer-display").innerText = timeLeft + "s";
+    
+    timerInterval = setInterval(() => {
+        if (!isPaused && !isGameOver && feedbackManager.timer <= 0) {
+            timeLeft--;
+            document.getElementById("timer-display").innerText = timeLeft + "s";
+            if (timeLeft <= 0) handleLifeLoss();
+        }
+    }, 1000);
+}
+
+function updateHUD() {
+    document.getElementById("year-display").innerText = selectedYearGroup;
+    document.getElementById("level-display").innerText = "L" + selectedLevel;
+    document.getElementById("progress-display").innerText = levelProgress;
+    document.getElementById("total-progress-display").innerText = targetQuestions;
+    document.getElementById("score-display").innerText = score;
+    document.getElementById("lives-display").innerText = lives;
+}
+
+function updateTheme() {
+    let stage = Math.min(Math.floor(levelProgress / 2), 4);
+    let paletteIdx = (selectedLevel - 1) % 3;
+    let palette = stageColors[paletteIdx];
+    document.body.style.backgroundColor = palette[stage];
+    document.getElementById("game-container").style.backgroundColor = palette[stage];
+}
+
+function renderVisualBlock(den, num = 1) {
+    let canvasWidth = Math.max(den * 18, 60);
+    let canvasHeight = 28;
+
+    let c = document.createElement("canvas");
+    c.width = canvasWidth;
+    c.height = canvasHeight;
+    c.style.border = "2px solid #ffffff";
+    c.style.borderRadius = "4px";
+    c.style.verticalAlign = "middle";
+    c.style.marginLeft = "3px";
+    c.style.marginRight = "3px";
+
+    let ctx2d = c.getContext("2d");
+    let cellW = canvasWidth / den;
+
+    ctx2d.fillStyle = "#ffffff";
+    ctx2d.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    for (let i = 0; i < num; i++) {
+        ctx2d.fillStyle = "#ff9933";
+        ctx2d.fillRect(i * cellW, 0, cellW, canvasHeight);
+    }
+
+    ctx2d.strokeStyle = "#000000";
+    ctx2d.lineWidth = 2;
+    for (let i = 0; i < den; i++) {
+        ctx2d.strokeRect(i * cellW, 0, cellW, canvasHeight);
+    }
+
+    return c;
+}
+
+function renderMixedVisualBlock(whole, num, den) {
+    let container = document.createElement("div");
+    container.style.display = "inline-flex";
+    container.style.alignItems = "center";
+    container.style.gap = "2px";
+
+    for (let w = 0; w < whole; w++) {
+        container.appendChild(renderVisualBlock(den, den));
+    }
+    if (num > 0) {
+        container.appendChild(renderVisualBlock(den, num));
+    }
+    return container;
+}
+
+function formatFracHTML(n, d) {
+    return `<span class="frac"><span class="top">${n}</span><span class="bottom">${d}</span></span>`;
+}
+
+function generateNewProblem() {
+    if (isGameOver) return;
+
+    let targetEl = document.getElementById("target-fraction");
+    let instructionType = document.getElementById("instruction-type");
+    targetEl.innerHTML = "";
+
+    let isPhaseA = levelProgress < 5;
+
+    if (selectedYearGroup === "Year 3") {
+        if (selectedLevel === 1) {
+            let den, num, currentKey;
+            do {
+                den = Math.floor(Math.random() * 5) + 2;
+                num = isPhaseA ? den : Math.floor(Math.random() * (den - 2)) + 2;
+                currentKey = `${num}/${den}`;
+            } while (currentKey === lastProblemKey);
+            
+            lastProblemKey = currentKey;
+            currentProblemData = { type: 'visual_target', num: num, den: den };
+            instructionType.innerText = "FRACTION";
+            targetEl.appendChild(renderVisualBlock(den, num));
+            
+        } else if (selectedLevel === 2) {
+            let den, num, neededNum, currentKey;
+            do {
+                den = Math.floor(Math.random() * 5) + 3;
+                num = Math.floor(Math.random() * (den - 1)) + 1;
+                neededNum = den - num;
+                currentKey = `${num}/${den}_phase${isPhaseA}`;
+            } while (currentKey === lastProblemKey);
+
+            lastProblemKey = currentKey;
+            currentProblemData = { type: 'complete_whole', num: num, den: den, neededNum: neededNum, isPhaseA: isPhaseA };
+            instructionType.innerText = "FRACTION TO MAKE 1 WHOLE";
+
+            if (isPhaseA) {
+                targetEl.appendChild(renderVisualBlock(den, num));
+                let txt = document.createElement("span");
+                txt.className = "fraction-display";
+                txt.innerHTML = ` + ? = 1 WHOLE`;
+                targetEl.appendChild(txt);
+            } else {
+                targetEl.innerHTML = `
+                    <span class="fraction-display">
+                        ${formatFracHTML(num, den)} + ? = 1 WHOLE
+                    </span>`;
+            }
+
+        } else if (selectedLevel === 3) {
+            const basePairs = [
+                {n: 1, d: 2, mults: [2, 3, 4]},
+                {n: 1, d: 3, mults: [2, 3]},
+                {n: 2, d: 3, mults: [2, 3]},
+                {n: 1, d: 4, mults: [2]},
+                {n: 3, d: 4, mults: [2]},
+                {n: 1, d: 5, mults: [2]}
+            ];
+            let pair, m, targetNum, targetDen, currentKey;
+            do {
+                pair = basePairs[Math.floor(Math.random() * basePairs.length)];
+                m = pair.mults[Math.floor(Math.random() * pair.mults.length)];
+                targetNum = pair.n * m;
+                targetDen = pair.d * m;
+                currentKey = `${pair.n}/${pair.d}_${targetNum}/${targetDen}`;
+            } while (currentKey === lastProblemKey);
+
+            lastProblemKey = currentKey;
+            currentProblemData = { 
+                type: 'y3_equiv', 
+                baseNum: pair.n, baseDen: pair.d, 
+                eqNum: targetNum, eqDen: targetDen,
+                isPhaseA: isPhaseA
+            };
+
+            instructionType.innerText = "EQUIVALENT FRACTION";
+
+            if (isPhaseA) {
+                targetEl.appendChild(renderVisualBlock(pair.d, pair.n));
+            } else {
+                targetEl.innerHTML = `<span class="fraction-display">${formatFracHTML(pair.n, pair.d)}</span>`;
+            }
+        }
+    } else if (selectedYearGroup === "Year 4") {
+        let maxDen = selectedLevel === 1 ? 6 : (selectedLevel === 2 ? 8 : 12);
+        let den, whole, num, improperNum, currentKey;
+
+        do {
+            den = Math.floor(Math.random() * (maxDen - 1)) + 2;
+            whole = Math.floor(Math.random() * 2) + 1;
+            num = Math.floor(Math.random() * (den - 1)) + 1;
+            improperNum = whole * den + num;
+            currentKey = `${whole}_${num}/${den}_L${selectedLevel}_P${isPhaseA}`;
+        } while (currentKey === lastProblemKey);
+
+        lastProblemKey = currentKey;
+
+        if (selectedLevel === 1) {
+            currentProblemData = { type: 'improper_to_mixed', whole: whole, num: num, den: den, improperNum: improperNum };
+            instructionType.innerText = "MIXED NUMBER";
+
+            if (isPhaseA) {
+                targetEl.appendChild(renderMixedVisualBlock(whole, num, den));
+            } else {
+                targetEl.innerHTML = `<span class="fraction-display">${formatFracHTML(improperNum, den)}</span>`;
+            }
+        } else if (selectedLevel === 2) {
+            currentProblemData = { type: 'mixed_to_improper', whole: whole, num: num, den: den, targetNum: improperNum };
+            instructionType.innerText = "IMPROPER FRACTION";
+
+            if (isPhaseA) {
+                targetEl.appendChild(renderMixedVisualBlock(whole, num, den));
+            } else {
+                targetEl.innerHTML = `<span class="fraction-display">${whole}${formatFracHTML(num, den)}</span>`;
+            }
+        } else if (selectedLevel === 3) {
+            let isImproperTarget = Math.random() < 0.5;
+            if (isImproperTarget) {
+                currentProblemData = { type: 'mixed_to_improper', whole: whole, num: num, den: den, targetNum: improperNum };
+                instructionType.innerText = "IMPROPER FRACTION";
+                targetEl.innerHTML = `<span class="fraction-display">${whole}${formatFracHTML(num, den)}</span>`;
+            } else {
+                currentProblemData = { type: 'improper_to_mixed', whole: whole, num: num, den: den, improperNum: improperNum };
+                instructionType.innerText = "MIXED NUMBER";
+                targetEl.innerHTML = `<span class="fraction-display">${formatFracHTML(improperNum, den)}</span>`;
+            }
+        }
+    } else if (selectedYearGroup === "Year 5") {
+        if (selectedLevel === 1) {
+            let currentKey, num, decVal;
+            do {
+                if (isPhaseA) {
+                    num = Math.floor(Math.random() * 9) + 1;
+                    decVal = (num / 10).toFixed(1);
+                    currentKey = `L1A_${num}`;
+                } else {
+                    const convs = [
+                        {f: "1/2", d: "0.5"}, {f: "1/4", d: "0.25"}, {f: "3/4", d: "0.75"},
+                        {f: "1/5", d: "0.2"}, {f: "2/5", d: "0.4"}, {f: "3/5", d: "0.6"}, {f: "4/5", d: "0.8"}
+                    ];
+                    let item = convs[Math.floor(Math.random() * convs.length)];
+                    decVal = item.d;
+                    num = item.f;
+                    currentKey = `L1B_${item.f}`;
+                }
+            } while (currentKey === lastProblemKey);
+
+            lastProblemKey = currentKey;
+
+            if (isPhaseA) {
+                currentProblemData = { type: 'y5_l1_visual', num: num, den: 10, decVal: decVal };
+                instructionType.innerText = "DECIMAL VALUE";
+                targetEl.appendChild(renderVisualBlock(10, num));
+            } else {
+                let parts = num.split("/");
+                currentProblemData = { type: 'y5_l1_conv', decVal: decVal, fStr: num };
+                instructionType.innerText = "DECIMAL EQUIVALENT";
+                targetEl.innerHTML = `<span class="fraction-display">${formatFracHTML(parts[0], parts[1])}</span>`;
+            }
+        } else if (selectedLevel === 2) {
+            let currentKey;
+            if (isPhaseA) {
+                let pct;
+                do {
+                    pct = (Math.floor(Math.random() * 8) + 1) * 10;
+                    currentKey = `L2A_pct_${pct}`;
+                } while (currentKey === lastProblemKey);
+
+                lastProblemKey = currentKey;
+                currentProblemData = { type: 'y5_pct_concept', pctVal: `${pct}%`, num: pct };
+                instructionType.innerText = "PERCENTAGE";
+                targetEl.appendChild(renderVisualBlock(10, pct / 10));
+            } else {
+                const fdpList = [
+                    { f: "1/2", d: "0.5", p: "50%" }, { f: "1/4", d: "0.25", p: "25%" },
+                    { f: "3/4", d: "0.75", p: "75%" }, { f: "1/5", d: "0.2", p: "20%" },
+                    { f: "2/5", d: "0.4", p: "40%" }, { f: "1/10", d: "0.1", p: "10%" }
+                ];
+                let item, showPct, ans;
+                do {
+                    item = fdpList[Math.floor(Math.random() * fdpList.length)];
+                    showPct = Math.random() < 0.5;
+                    ans = showPct ? item.p : item.d;
+                    currentKey = `L2B_fdp_${item.f}_${showPct}`;
+                } while (currentKey === lastProblemKey);
+
+                lastProblemKey = currentKey;
+                currentProblemData = { type: 'y5_fdp_equiv', ans: ans, showPct: showPct, item: item };
+                instructionType.innerText = showPct ? "PERCENTAGE" : "DECIMAL";
+                
+                if (showPct) {
+                    let fp = item.f.split("/");
+                    targetEl.innerHTML = `<span class="fraction-display">${formatFracHTML(fp[0], fp[1])}</span>`;
+                } else {
+                    targetEl.innerHTML = `<span class="fraction-display">${item.p}</span>`;
+                }
+            }
+        } else if (selectedLevel === 3) {
+            let currentKey;
+            if (isPhaseA) {
+                let ones, tenths, hundredths, valStr, correctExp;
+                do {
+                    ones = Math.floor(Math.random() * 9) + 1;
+                    tenths = Math.floor(Math.random() * 9) + 1;
+                    hundredths = Math.floor(Math.random() * 9) + 1;
+                    valStr = `${ones}.${tenths}${hundredths}`;
+                    correctExp = `${ones} + 0.${tenths} + 0.0${hundredths}`;
+                    currentKey = `L3A_part_${valStr}`;
+                } while (currentKey === lastProblemKey);
+
+                lastProblemKey = currentKey;
+                currentProblemData = { type: 'y5_part_inv', valStr: valStr, correctExp: correctExp };
+                instructionType.innerText = "DECIMAL VALUE";
+                targetEl.innerHTML = `<span class="fraction-display">${correctExp}</span>`;
+            } else {
+                let valStr, correctExp;
+                const problemTemplates = [
+                    () => {
+                        let a = Math.floor(Math.random() * 5) + 1;
+                        let b = (Math.floor(Math.random() * 8) + 1) / 10;
+                        let c = (Math.floor(Math.random() * 50) + 50) / 100;
+                        let sum = (a + b + c).toFixed(2);
+                        return { exp: `${a} + ${b} + ${c}`, val: `${parseFloat(sum)}` };
+                    },
+                    () => {
+                        let a = Math.floor(Math.random() * 5) + 1;
+                        let b = (Math.floor(Math.random() * 5) + 5) / 10;
+                        let c = (Math.floor(Math.random() * 5) + 5) / 10;
+                        let sum = (a + b + c).toFixed(1);
+                        return { exp: `${a} + ${b} + ${c}`, val: `${parseFloat(sum)}` };
+                    },
+                    () => {
+                        let a = Math.floor(Math.random() * 5) + 1;
+                        let b = (Math.floor(Math.random() * 8) + 1) / 1000;
+                        let c = (Math.floor(Math.random() * 8) + 1) / 10;
+                        let d = (Math.floor(Math.random() * 30) + 10) / 100;
+                        let sum = (a + b + c + d).toFixed(3);
+                        return { exp: `${a} + ${b} + ${c} + ${d}`, val: `${parseFloat(sum)}` };
+                    }
+                ];
+
+                do {
+                    let tFunc = problemTemplates[Math.floor(Math.random() * problemTemplates.length)];
+                    let res = tFunc();
+                    correctExp = res.exp;
+                    valStr = res.val;
+                    currentKey = `L3B_adv_${valStr}`;
+                } while (currentKey === lastProblemKey);
+
+                lastProblemKey = currentKey;
+                currentProblemData = { type: 'y5_part_inv', valStr: valStr, correctExp: correctExp };
+                instructionType.innerText = "TOTAL SUM";
+                targetEl.innerHTML = `<span class="fraction-display">${correctExp}</span>`;
+            }
+        }
+    } else if (selectedYearGroup === "Year 6") {
+        if (selectedLevel === 1) {
+            let num, den, currentKey, ansStr, promptHtml;
+            do {
+                if (isPhaseA) {
+                    let baseDen = (Math.floor(Math.random() * 6) + 3) * 10;
+                    let baseNum = (Math.floor(Math.random() * (baseDen / 10 - 1)) + 1) * 10;
+                    num = baseNum;
+                    den = baseDen;
+                } else {
+                    let divisor = [3, 4, 6, 8, 9, 12][Math.floor(Math.random() * 6)];
+                    let simpDen = Math.floor(Math.random() * 6) + 2;
+                    let simpNum = Math.floor(Math.random() * (simpDen - 1)) + 1;
+                    
+                    let gBase = gcd(simpNum, simpDen);
+                    simpNum /= gBase;
+                    simpDen /= gBase;
+                    
+                    num = simpNum * divisor;
+                    den = simpDen * divisor;
+                }
+
+                let commonFactor = gcd(num, den);
+                let simpN = num / commonFactor;
+                let simpD = den / commonFactor;
+
+                ansStr = `${simpN}/${simpD}`;
+                promptHtml = `Simplify ${formatFracHTML(num, den)}`;
+                currentKey = `L1_simp_${num}_${den}`;
+            } while (currentKey === lastProblemKey);
+
+            lastProblemKey = currentKey;
+
+            let commonFactor = gcd(num, den);
+            let simpN = num / commonFactor;
+            let simpD = den / commonFactor;
+
+            let dists = [];
+            let setDists = new Set([ansStr]);
+
+            while (dists.length < 3) {
+                let dN = Math.floor(Math.random() * 5) + 1;
+                let dD = Math.floor(Math.random() * 8) + 2;
+                let candidate = `${dN}/${dD}`;
+                if (!setDists.has(candidate) && dN < dD) {
+                    setDists.add(candidate);
+                    dists.push(candidate);
+                }
+            }
+
+            currentProblemData = { type: 'y6_generic', prompt: promptHtml, ans: ansStr, dists: dists, dispType: 'frac' };
+            instructionType.innerText = "SIMPLIFIED FRACTION";
+            targetEl.innerHTML = `<span class="fraction-display">${promptHtml}</span>`;
+
+        } else if (selectedLevel === 2) {
+            if (isPhaseA) {
+                let den = Math.floor(Math.random() * 10) + 3;
+                let n1 = Math.floor(Math.random() * (den - 2)) + 1;
+                let n2 = Math.floor(Math.random() * (den - n1 - 1)) + 1;
+                let isAdd = Math.random() < 0.5;
+                
+                let resN = isAdd ? (n1 + n2) : Math.max(n1, n2);
+                let otherN = isAdd ? 0 : Math.min(n1, n2);
+                if (!isAdd) { n1 = resN; n2 = otherN; resN = n1 - n2; }
+
+                let g = gcd(resN, den);
+                let ansStr = `${resN/g}/${den/g}`;
+                let opStr = isAdd ? "+" : "-";
+                let prompt = `${formatFracHTML(n1, den)} ${opStr} ${formatFracHTML(n2, den)} =`;
+
+                let dists = [];
+                let setD = new Set([ansStr]);
+                while(dists.length < 3) {
+                    let dN = Math.floor(Math.random() * (den + 2)) + 1;
+                    let dD = den;
+                    let candidate = `${dN}/${dD}`;
+                    if(!setD.has(candidate)) { setD.add(candidate); dists.push(candidate); }
+                }
+
+                currentProblemData = { type: 'y6_generic', prompt: prompt, ans: ansStr, dists: dists, dispType: 'frac' };
+                instructionType.innerText = "RESULT";
+                targetEl.innerHTML = `<span class="fraction-display">${prompt}</span>`;
+            } else {
+                const qPoolB = [
+                    { prompt: formatFracHTML(1, 3) + " × " + formatFracHTML(2, 5) + " =", ans: "2/15", dists: ["3/8", "2/8", "1/15"], type: 'frac' },
+                    { prompt: formatFracHTML(3, 4) + " ÷ 2 =", ans: "3/8", dists: ["6/4", "3/2", "1/4"], type: 'frac' },
+                    { prompt: formatFracHTML(2, 3) + " × " + formatFracHTML(3, 4) + " =", ans: "1/2", dists: ["6/12", "5/7", "2/4"], type: 'frac' },
+                    { prompt: formatFracHTML(1, 5) + " ÷ 3 =", ans: "1/15", dists: ["3/5", "1/3", "5/3"], type: 'frac' },
+                    { prompt: formatFracHTML(4, 5) + " × " + formatFracHTML(1, 2) + " =", ans: "2/5", dists: ["4/10", "5/7", "1/5"], type: 'frac' }
+                ];
+                let item = qPoolB[Math.floor(Math.random() * qPoolB.length)];
+                currentProblemData = { type: 'y6_generic', prompt: item.prompt, ans: item.ans, dists: item.dists, dispType: item.type };
+                instructionType.innerText = "RESULT";
+                targetEl.innerHTML = `<span class="fraction-display">${item.prompt}</span>`;
+            }
+        } else if (selectedLevel === 3) {
+            if (isPhaseA) { 
+                const qPoolA = [
+                    { prompt: formatFracHTML(1, 2) + " + " + formatFracHTML(1, 4) + " =", ans: "3/4", dists: ["2/6", "2/4", "1/3"], type: 'frac' },
+                    { prompt: "1 + " + formatFracHTML(2, 3) + " =", ans: "1 2/3", dists: ["3/3", "5/3", "1/3"], type: 'mixed' },
+                    { prompt: formatFracHTML(2, 3) + " - " + formatFracHTML(1, 6) + " =", ans: "1/2", dists: ["3/6", "1/3", "1/6"], type: 'frac' },
+                    { prompt: "2 - " + formatFracHTML(3, 4) + " =", ans: "1 1/4", dists: ["1 3/4", "5/4", "2 1/4"], type: 'mixed' },
+                    { prompt: formatFracHTML(3, 5) + " + " + formatFracHTML(1, 10) + " =", ans: "7/10", dists: ["4/15", "4/10", "3/10"], type: 'frac' }
+                ];
+                let item = qPoolA[Math.floor(Math.random() * qPoolA.length)];
+                currentProblemData = { type: 'y6_generic', prompt: item.prompt, ans: item.ans, dists: item.dists, dispType: item.type };
+                instructionType.innerText = "RESULT";
+                targetEl.innerHTML = `<span class="fraction-display">${item.prompt}</span>`;
+            } else { 
+                const qPoolB = [
+                    { prompt: formatFracHTML(3, 4) + " × 4 =", ans: "3", dists: ["12/16", "3/4", "12/4"], type: 'num' },
+                    { prompt: "3.03 + 1.2 =", ans: "4.23", dists: ["3.15", "4.05", "4.5"], type: 'num' },
+                    { prompt: formatFracHTML(1, 4) + " ÷ 2 =", ans: "1/8", dists: ["2/4", "1/2", "2/8"], type: 'frac' },
+                    { prompt: "5.04 + 2.3 =", ans: "7.34", dists: ["7.07", "5.34", "7.43"], type: 'num' },
+                    { prompt: formatFracHTML(2, 5) + " × " + formatFracHTML(1, 3) + " =", ans: "2/15", dists: ["3/8", "2/8", "1/15"], type: 'frac' }
+                ];
+                let item = qPoolB[Math.floor(Math.random() * qPoolB.length)];
+                currentProblemData = { type: 'y6_generic', prompt: item.prompt, ans: item.ans, dists: item.dists, dispType: item.type };
+                instructionType.innerText = "RESULT";
+                targetEl.innerHTML = `<span class="fraction-display">${item.prompt}</span>`;
+            }
+        } else if (selectedLevel === 4) {
+            if (isPhaseA) { 
+                const qPoolA = [
+                    { prompt: "1.02 + 1.29 =", ans: "2.31", dists: ["2.21", "2.30", "1.31"], type: 'num' },
+                    { prompt: "3.48 + 2.37 =", ans: "5.85", dists: ["5.75", "5.81", "6.85"], type: 'num' },
+                    { prompt: "4.65 + 1.55 =", ans: "6.2", dists: ["6.10", "5.2", "6.12"], type: 'num' },
+                    { prompt: "2.84 + 3.39 =", ans: "6.23", dists: ["6.13", "5.23", "6.33"], type: 'num' },
+                    { prompt: "5.76 + 4.46 =", ans: "10.22", dists: ["10.12", "9.22", "10.2"], type: 'num' }
+                ];
+                let item = qPoolA[Math.floor(Math.random() * qPoolA.length)];
+                currentProblemData = { type: 'y6_generic', prompt: item.prompt, ans: item.ans, dists: item.dists, dispType: item.type };
+                instructionType.innerText = "RESULT";
+                targetEl.innerHTML = `<span class="fraction-display">${item.prompt}</span>`;
+            } else { 
+                const qPoolB = [
+                    { prompt: "Alex spent 3/5, left £60. Start with?", ans: "£150", dists: ["£100", "£180", "£90"], type: 'str' },
+                    { prompt: "400 counters: 1/4 Red, 3/8 Blue. More Blue?", ans: "50", dists: ["150", "100", "250"], type: 'num' },
+                    { prompt: "B is 120, A is 3/4 of B. Find A", ans: "90", dists: ["30", "60", "40"], type: 'num' },
+                    { prompt: "Kim reads 1/4 Mon, 1/3 Tue. Rest Wed?", ans: "5/12", dists: ["7/12", "2/7", "1/2"], type: 'frac' },
+                    { prompt: "Spent 2/5 of £50. Remaining?", ans: "£30", dists: ["£20", "£25", "£35"], type: 'str' }
+                ];
+                let item = qPoolB[Math.floor(Math.random() * qPoolB.length)];
+                currentProblemData = { type: 'y6_generic', prompt: item.prompt, ans: item.ans, dists: item.dists, dispType: item.type };
+                instructionType.innerText = "CORRECT ANSWER";
+                targetEl.innerHTML = `<span class="fraction-display">${item.prompt}</span>`;
+            }
+        }
+    }
+
+    setupGhostsForCurrentProblem();
+    startTimer();
+}
+
+function setupGhostsForCurrentProblem() {
+    let ghostCount = 4;
+    let speed = 0.035;
+
+    if ((selectedYearGroup === "Year 4" || selectedYearGroup === "Year 5" || selectedYearGroup === "Year 6") && (selectedLevel >= 2)) {
+        ghostCount = 5;
+        speed = 0.048;
+    }
+
+    let options = [];
+
+    if (currentProblemData.type === 'y6_generic') {
+        let ans = currentProblemData.ans;
+        let dists = currentProblemData.dists;
+
+        let parseOpt = (valStr) => {
+            if (valStr.includes("/")) {
+                if (valStr.includes(" ")) {
+                    let p = valStr.split(" ");
+                    let fp = p[1].split("/");
+                    return { type: 'mixed', whole: p[0], num: fp[0], den: fp[1], isCorrect: false };
+                } else {
+                    let fp = valStr.split("/");
+                    return { type: 'fraction', num: fp[0], den: fp[1], isCorrect: false };
+                }
+            } else if (!isNaN(valStr)) {
+                return { type: 'number', val: valStr, isCorrect: false };
+            } else {
+                return { type: 'text', val: valStr, isCorrect: false };
+            }
+        };
+
+        let correctOpt = parseOpt(ans);
+        correctOpt.isCorrect = true;
+        options.push(correctOpt);
+
+        dists.forEach(d => {
+            if (options.length < ghostCount) {
+                options.push(parseOpt(d));
+            }
+        });
+    } else if (currentProblemData.type === 'visual_target') {
+        let correctNum = currentProblemData.num;
+        let correctDen = currentProblemData.den;
+        options.push({ type: 'fraction', num: correctNum, den: correctDen, isCorrect: true });
+
+        while (options.length < ghostCount) {
+            let wDen = Math.floor(Math.random() * 5) + 2;
+            let wNum = Math.floor(Math.random() * wDen) + 1;
+            if ((wNum !== correctNum || wDen !== correctDen) && !options.some(o => o.num === wNum && o.den === wDen)) {
+                options.push({ type: 'fraction', num: wNum, den: wDen, isCorrect: false });
+            }
+        }
+    } else if (currentProblemData.type === 'complete_whole') {
+        let correctNum = currentProblemData.neededNum;
+        let den = currentProblemData.den;
+        
+        options.push({ type: 'fraction', num: correctNum, den: den, isCorrect: true });
+
+        let wrongDen = den + (Math.random() < 0.5 ? 1 : -1);
+        if (wrongDen < 2) wrongDen = 2;
+        if (wrongDen === den) wrongDen = den + 2;
+        options.push({ type: 'fraction', num: correctNum, den: wrongDen, isCorrect: false });
+
+        let wrongNum = currentProblemData.num;
+        if (wrongNum === correctNum) wrongNum = (correctNum % (den - 1)) + 1;
+        if (!options.some(o => o.num === wrongNum && o.den === den)) {
+            options.push({ type: 'fraction', num: wrongNum, den: den, isCorrect: false });
+        }
+
+        while (options.length < ghostCount) {
+            let randNum = Math.floor(Math.random() * (den + 2)) + 1;
+            let randDen = Math.floor(Math.random() * 5) + 3;
+            if (!options.some(o => o.num === randNum && o.den === randDen)) {
+                options.push({ type: 'fraction', num: randNum, den: randDen, isCorrect: false });
+            }
+        }
+    } else if (currentProblemData.type === 'y3_equiv') {
+        let eqNum = currentProblemData.eqNum;
+        let eqDen = currentProblemData.eqDen;
+        options.push({ type: 'fraction', num: eqNum, den: eqDen, isCorrect: true });
+
+        let attempts = 0;
+        while (options.length < ghostCount && attempts < 100) {
+            attempts++;
+            let wNum = Math.floor(Math.random() * 8) + 1;
+            let wDen = Math.floor(Math.random() * 8) + 2;
+            if ((wNum / wDen !== eqNum / eqDen) && !options.some(o => o.num === wNum && o.den === wDen)) {
+                options.push({ type: 'fraction', num: wNum, den: wDen, isCorrect: false });
+            }
+        }
+        while (options.length < ghostCount) {
+            options.push({ type: 'fraction', num: options.length + 1, den: eqDen + 1, isCorrect: false });
+        }
+    } else if (currentProblemData.type === 'mixed_to_improper') {
+        let targetNum = currentProblemData.targetNum;
+        let den = currentProblemData.den;
+        let optionSet = new Set();
+        
+        options.push({ type: 'fraction', num: targetNum, den: den, isCorrect: true });
+        optionSet.add(targetNum);
+
+        let offset = 1;
+        while (options.length < ghostCount) {
+            let wNum = targetNum + (offset % 2 === 0 ? Math.ceil(offset / 2) : -Math.ceil(offset / 2));
+            if (wNum > 0 && !optionSet.has(wNum)) {
+                optionSet.add(wNum);
+                options.push({ type: 'fraction', num: wNum, den: den, isCorrect: false });
+            }
+            offset++;
+        }
+    } else if (currentProblemData.type === 'improper_to_mixed') {
+        let correctOpt = { type: 'mixed', whole: currentProblemData.whole, num: currentProblemData.num, den: currentProblemData.den, isCorrect: true };
+        let optionSet = new Set();
+        
+        options.push(correctOpt);
+        optionSet.add(`${currentProblemData.whole}_${currentProblemData.num}`);
+
+        let offset = 1;
+        while (options.length < ghostCount) {
+            let wWhole = currentProblemData.whole + (offset % 2 === 0 ? Math.ceil(offset / 2) : -Math.ceil(offset / 2));
+            let wNum = currentProblemData.num;
+            
+            if (wWhole > 0 && !optionSet.has(`${wWhole}_${wNum}`)) {
+                optionSet.add(`${wWhole}_${wNum}`);
+                options.push({ type: 'mixed', whole: wWhole, num: wNum, den: currentProblemData.den, isCorrect: false });
+            }
+            offset++;
+        }
+    } else if (currentProblemData.type === 'y5_l1_visual' || currentProblemData.type === 'y5_l1_conv') {
+        let correctDec = currentProblemData.decVal;
+        options.push({ type: 'number', val: correctDec, isCorrect: true });
+
+        let setDec = new Set([correctDec]);
+
+        let distractors = ["0.5", "0.25", "0.75", "0.2", "0.4", "0.6", "0.8", "0.1", "0.3"];
+        distractors.forEach(d => {
+            if (options.length < ghostCount && !setDec.has(d)) {
+                setDec.add(d);
+                options.push({ type: 'number', val: d, isCorrect: false });
+            }
+        });
+    } else if (currentProblemData.type === 'y5_part_inv') {
+        let correctVal = currentProblemData.valStr;
+        options.push({ type: 'number', val: correctVal, isCorrect: true });
+
+        let setVal = new Set([correctVal]);
+        let offset = 1;
+        let decPlaces = (correctVal.split('.')[1] || '').length;
+
+        while (options.length < ghostCount) {
+            let base = parseFloat(correctVal);
+            let step = decPlaces === 3 ? 0.005 : (decPlaces === 2 ? 0.05 : 0.1);
+            let wrongVal = (base + (offset % 2 === 0 ? offset * step : -offset * step)).toFixed(decPlaces);
+            if (parseFloat(wrongVal) > 0 && !setVal.has(wrongVal)) {
+                setVal.add(wrongVal);
+                options.push({ type: 'number', val: wrongVal, isCorrect: false });
+            }
+            offset++;
+        }
+    } else if (currentProblemData.type === 'y5_pct_concept') {
+        let correct = currentProblemData.pctVal;
+        options.push({ type: 'number', val: correct, isCorrect: true });
+
+        let setPct = new Set([correct]);
+        let offset = 1;
+        while (options.length < ghostCount) {
+            let wPct = `${Math.min(100, Math.max(10, currentProblemData.num + (offset % 2 === 0 ? offset * 10 : -offset * 10)))}%`;
+            if (!setPct.has(wPct)) {
+                setPct.add(wPct);
+                options.push({ type: 'number', val: wPct, isCorrect: false });
+            }
+            offset++;
+        }
+    } else if (currentProblemData.type === 'y5_fdp_equiv') {
+        let ans = currentProblemData.ans;
+        options.push({ type: 'number', val: ans, isCorrect: true });
+
+        let dists = currentProblemData.showPct 
+            ? ["10%", "25%", "50%", "75%", "20%", "40%"]
+            : ["0.5", "0.25", "0.75", "0.2", "0.4", "0.1"];
+        
+        dists.filter(d => d !== ans).forEach(d => {
+            if (options.length < ghostCount) {
+                options.push({ type: 'number', val: d, isCorrect: false });
+            }
+        });
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    let activeSpawns = (ghostCount === 5) ? spawnPoints5 : spawnPoints4;
+
+    ghosts = options.map((opt, index) => {
+        return {
+            x: activeSpawns[index].x, y: activeSpawns[index].y,
+            dx: 0, dy: 0, option: opt, isCorrect: opt.isCorrect, 
+            speed: speed
+        };
+    });
+
+    resetPositions();
+}
+
+function resetPositions() {
+    pacman.x = 1; pacman.y = 1;
+    pacman.dx = 0; pacman.dy = 0;
+    pacman.direction = 'right';
+
+    let activeSpawns = (ghosts.length === 5) ? spawnPoints5 : spawnPoints4;
+
+    ghosts.forEach((g, index) => {
+        g.x = activeSpawns[index].x;
+        g.y = activeSpawns[index].y;
+        g.dx = 0; g.dy = 0;
+    });
+}
+
+window.addEventListener("keydown", e => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        activeKeys[e.key] = true;
+    }
+});
+
+window.addEventListener("keyup", e => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        delete activeKeys[e.key];
+    }
+});
+
+function calculatePoints() {
+    if (selectedTimerMode === '30') return Math.max(5, timeLeft * 3);
+    if (selectedTimerMode === '60') return Math.max(2, timeLeft);
+    return 10;
+}
+
+function handleLifeLoss() {
+    if (isGameOver) return;
+    lives--;
+    updateHUD();
+    playSFX(audioWrong);
+
+    if (lives <= 0) {
+        triggerEndSequence(false);
+    } else {
+        feedbackManager.image = (lives === 2) ? feedbackImages.twomore : feedbackImages.onemore;
+        feedbackManager.timer = feedbackManager.tryAgainDuration;
+        resetPositions();
+        startTimer();
+    }
+}
+
+function triggerEndSequence(won) {
+    clearInterval(timerInterval);
+    gameOutcome = won;
+    
+    if (won) {
+        playSFX(audioWin);
+    } else {
+        playSFX(audioLose);
+    }
+
+    feedbackManager.image = won ? feedbackImages.youwin : feedbackImages.youlose;
+    feedbackManager.timer = feedbackManager.endGameDuration;
+}
+
+function startNextLevel() {
+    selectedLevel++;
+    startGame();
+}
+
+function endGameOverlay() {
+    isGameOver = true;
+    document.getElementById("game-container").style.display = "none";
+    document.getElementById("end-overlay").style.display = "flex";
+    
+    document.getElementById("end-title").innerText = gameOutcome ? "VICTORY!" : "GAME OVER";
+    document.getElementById("end-stats").innerHTML = `
+        <strong>YEAR GROUP:</strong> ${selectedYearGroup}<br>
+        <strong>LEVEL:</strong> ${selectedLevel}<br>
+        <strong>FINAL SCORE:</strong> ${score}<br>
+        <strong>QUESTIONS COMPLETED:</strong> ${levelProgress}/${targetQuestions}<br>
+        <strong>LIVES REMAINING:</strong> ${lives}
+    `;
+
+    const btnContainer = document.getElementById("end-buttons-container");
+    btnContainer.innerHTML = "";
+
+    const maxLevelsInGroup = yearGroupData[selectedYearGroup] ? yearGroupData[selectedYearGroup].length : 1;
+
+    if (gameOutcome && selectedLevel < maxLevelsInGroup) {
+        let btnNext = document.createElement("button");
+        btnNext.className = "btn-option";
+        btnNext.innerText = "Next Level";
+        btnNext.onclick = startNextLevel;
+        btnContainer.appendChild(btnNext);
+    }
+
+    let btnAgain = document.createElement("button");
+    btnAgain.className = "btn-option";
+    btnAgain.innerText = "Play Again";
+    btnAgain.onclick = startGame;
+
+    let btnMenu = document.createElement("button");
+    btnMenu.className = "btn-option";
+    btnMenu.innerText = "Main Menu";
+    btnMenu.onclick = showMainMenu;
+
+    btnContainer.appendChild(btnAgain);
+    btnContainer.appendChild(btnMenu);
+}
+
+function update() {
+    if (isPaused || isGameOver || feedbackManager.timer > 0) return;
+
+    pacman.dx = 0; pacman.dy = 0;
+
+    if (activeKeys["ArrowUp"])    { pacman.dy = -1; pacman.direction = 'up'; }
+    if (activeKeys["ArrowDown"])  { pacman.dy = 1;  pacman.direction = 'down'; }
+    if (activeKeys["ArrowLeft"])  { pacman.dx = -1; pacman.direction = 'left'; }
+    if (activeKeys["ArrowRight"]) { pacman.dx = 1;  pacman.direction = 'right'; }
+
+    let moving = (pacman.dx !== 0 || pacman.dy !== 0);
+    mouthFrame = moving ? (mouthFrame + 0.15) % 2 : 0;
+
+    let newX = pacman.x + pacman.dx * pacman.speed;
+    let newY = pacman.y + pacman.dy * pacman.speed;
+
+    if (canMoveTo(newX, newY)) {
+        pacman.x = newX;
+        pacman.y = newY;
+    }
+
+    if (pacman.x < -0.5) pacman.x = map[0].length - 0.5;
+    else if (pacman.x > map[0].length - 0.5) pacman.x = -0.5;
+
+    if (pacman.y < -0.5) pacman.y = map.length - 0.5;
+    else if (pacman.y > map.length - 0.5) pacman.y = -0.5;
+
+    ghosts.forEach(ghost => {
+        let gx = Math.round(ghost.x), gy = Math.round(ghost.y);
+
+        let inHorizTunnel = (gy === 4 && (ghost.x <= 0.5 || ghost.x >= map[0].length - 1.5));
+        let inVertTunnel = ((gx === 14 || gx === 15) && (ghost.y <= 0.5 || ghost.y >= map.length - 1.5));
+
+        if (inHorizTunnel) {
+            if (ghost.dx === 0) ghost.dx = (ghost.x <= 0.5) ? -1 : 1;
+            ghost.dy = 0;
+        } else if (inVertTunnel) {
+            if (ghost.dy === 0) ghost.dy = (ghost.y <= 0.5) ? -1 : 1;
+            ghost.dx = 0;
+        } else if (Math.abs(ghost.x - gx) < 0.05 && Math.abs(ghost.y - gy) < 0.05) {
+            let possibleDirs = [];
+            if (canMoveTo(gx + 1, gy)) possibleDirs.push({dx: 1, dy: 0});
+            if (canMoveTo(gx - 1, gy)) possibleDirs.push({dx: -1, dy: 0});
+            if (canMoveTo(gx, gy + 1)) possibleDirs.push({dx: 0, dy: 1});
+            if (canMoveTo(gx, gy - 1)) possibleDirs.push({dx: 0, dy: -1});
+
+            let validDirs = possibleDirs.filter(d => !(d.dx === -ghost.dx && d.dy === -ghost.dy));
+            let chosen = validDirs.length > 0 ? 
+                validDirs[Math.floor(Math.random() * validDirs.length)] : 
+                possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+
+            if (chosen) {
+                ghost.dx = chosen.dx;
+                ghost.dy = chosen.dy;
+            }
+        }
+
+        ghost.x += ghost.dx * ghost.speed;
+        ghost.y += ghost.dy * ghost.speed;
+
+        if (ghost.x < -0.5) ghost.x = map[0].length - 0.5;
+        else if (ghost.x > map[0].length - 0.5) ghost.x = -0.5;
+
+        if (ghost.y < -0.5) ghost.y = map.length - 0.5;
+        else if (ghost.y > map.length - 0.5) ghost.y = -0.5;
+
+        let dist = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
+        if (dist < 0.6 && !isGameOver && feedbackManager.timer <= 0) {
+            if (ghost.isCorrect) {
+                playSFX(audioRight);
+                score += calculatePoints();
+                levelProgress++;
+                shakeManager.timer = shakeManager.duration;
+                updateHUD();
+                updateTheme();
+
+                if (levelProgress >= targetQuestions) {
+                    triggerEndSequence(true);
+                } else {
+                    feedbackManager.image = feedbackImages.goodjob;
+                    feedbackManager.timer = feedbackManager.goodJobDuration;
+                }
+            } else {
+                handleLifeLoss();
+            }
+        }
+    });
+}
+
+function draw() {
+    ctx.save();
+    const GRID_SIZE = 25;
+
+    if (shakeManager.timer > 0) {
+        let dx = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        let dy = (Math.random() - 0.5) * 2 * shakeManager.intensity;
+        ctx.translate(dx, dy); 
+        shakeManager.timer--;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const wallSize = 19;
+    const wallOffset = (GRID_SIZE - wallSize) / 2;
+
+    for (let r = 0; r < map.length; r++) {
+        for (let c = 0; c < map[r].length; c++) {
+            if (map[r][c] === 1) {
+                ctx.fillStyle = "#00aa55";
+                ctx.fillRect(c * GRID_SIZE + wallOffset, r * GRID_SIZE + wallOffset, wallSize, wallSize);
+            }
+        }
+    }
+
+    let px = pacman.x * GRID_SIZE + GRID_SIZE / 2;
+    let py = pacman.y * GRID_SIZE + GRID_SIZE / 2;
+    let size = 26;
+
+    ctx.save();
+    ctx.translate(px, py);
+
+    let isOpen = Math.floor(mouthFrame) === 1;
+    let imgToDraw = null;
+
+    if (pacman.direction === 'left' || pacman.direction === 'right') {
+        imgToDraw = isOpen ? monsterImages.horizontalba : monsterImages.horizontal;
+        if (pacman.direction === 'right') ctx.scale(-1, 1);
+    } else {
+        imgToDraw = isOpen ? monsterImages.verticalba : monsterImages.vertical;
+        if (pacman.direction === 'down') ctx.scale(1, -1);
+    }
+
+    if (imgToDraw && imgToDraw.complete) {
+        ctx.drawImage(imgToDraw, -size/2, -size/2, size, size);
+    } else {
+        ctx.fillStyle = "#ffff00";
+        ctx.beginPath();
+        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+
+    ghosts.forEach(ghost => {
+        let gx = ghost.x * GRID_SIZE + GRID_SIZE / 2;
+        let gy = ghost.y * GRID_SIZE + GRID_SIZE / 2;
+
+        ctx.save();
+        ctx.translate(gx, gy);
+
+        let w = 38, h = 34;
+        
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-w/2, -h/2, w, h);
+
+        let opt = ghost.option;
+
+        if (opt.type === 'fraction') {
+            ctx.fillStyle = "#000000";
+            ctx.textAlign = "center";
+            ctx.font = "bold 12px Arial";
+            ctx.fillText(opt.num, 0, -2);
+            ctx.fillRect(-8, 1, 16, 1.5);
+            ctx.fillText(opt.den, 0, 12);
+        } else if (opt.type === 'number') {
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 11px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(opt.val, 0, 4);
+        } else if (opt.type === 'text') {
+            ctx.fillStyle = "#000000";
+            let fontSz = opt.val.length > 6 ? 7 : 9;
+            ctx.font = `bold ${fontSz}px Arial`;
+            ctx.textAlign = "center";
+            ctx.fillText(opt.val, 0, 3);
+        } else if (opt.type === 'mixed') {
+            ctx.fillStyle = "#000000";
+            ctx.textAlign = "center";
+            ctx.font = "bold 12px Arial";
+            ctx.fillText(opt.whole, -8, 5);
+            ctx.font = "bold 10px Arial";
+            ctx.fillText(opt.num, 6, -3);
+            ctx.fillRect(1, 0, 10, 1.5);
+            ctx.fillText(opt.den, 6, 11);
+        }
+
+        ctx.restore();
+    });
+
+    if (feedbackManager.timer > 0 && feedbackManager.image && feedbackManager.image.complete) {
+        let img = feedbackManager.image;
+        ctx.drawImage(img, canvas.width / 2 - img.width / 2, canvas.height / 2 - img.height / 2, img.width, img.height);
+        feedbackManager.timer--;
+
+        if (feedbackManager.timer === 0) {
+            if (feedbackManager.image === feedbackImages.youwin || feedbackManager.image === feedbackImages.youlose) {
+                endGameOverlay();
+            } else if (feedbackManager.image === feedbackImages.goodjob) {
+                generateNewProblem();
+            }
+        }
+    }
+
+    ctx.restore();
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
